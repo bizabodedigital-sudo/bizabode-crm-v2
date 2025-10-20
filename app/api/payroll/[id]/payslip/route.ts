@@ -37,10 +37,10 @@ export async function GET(
     const company = await Company.findById(authResult.user.companyId)
 
     console.log('Generating payslip PDF for payroll:', {
-      id: payroll._id,
-      employeeName: payroll.employeeId?.firstName + ' ' + payroll.employeeId?.lastName,
+      id: (payroll as any)._id,
+      employeeName: (payroll as any).employeeId?.firstName + ' ' + (payroll as any).employeeId?.lastName,
       companyName: company?.name,
-      itemsCount: payroll.items?.length || 0
+      itemsCount: (payroll as any).items?.length || 0
     })
 
     // Generate payslip PDF
