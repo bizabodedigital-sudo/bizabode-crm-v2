@@ -8,7 +8,7 @@ import { generatePayslipPDF } from '@/lib/utils/pdf-generator'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
@@ -18,9 +18,12 @@ export async function GET(
       return NextResponse.json({ error: authResult.error }, { status: 401 })
     }
 
+    // Await the params
+    const { id } = await params
+
     // Get payroll record with employee and company data
     const payroll = await Payroll.findOne({
-      _id: params.id,
+      _id: id,
       companyId: authResult.user.companyId
     })
       .populate('employeeId', 'firstName lastName email position department')
