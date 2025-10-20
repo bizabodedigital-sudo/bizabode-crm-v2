@@ -62,7 +62,7 @@ export async function POST(
 
     // Generate PDF using streaming method and convert to buffer
     const pdfStream = PDFGenerator.generateInvoicePDFStream(invoiceData, companyInfo)
-    const pdfBuffer = await getStream.buffer(pdfStream)
+    const pdfBuffer = await getStream(pdfStream)
 
     // Send email
     const emailHTML = emailSender.generateInvoiceEmailHTML(
