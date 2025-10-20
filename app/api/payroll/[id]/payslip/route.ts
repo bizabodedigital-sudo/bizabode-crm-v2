@@ -5,6 +5,10 @@ import Payroll from '@/lib/models/Payroll'
 import Employee from '@/lib/models/Employee'
 import Company from '@/lib/models/Company'
 import { generatePayslipPDF } from '@/lib/utils/pdf-generator'
+import { pdfResponse } from '@/lib/utils/pdf-response'
+
+// Ensure this runs in Node.js runtime for PDF generation
+export const runtime = 'nodejs'
 
 export async function GET(
   request: NextRequest,
@@ -48,13 +52,10 @@ export async function GET(
 
     console.log('PDF generated successfully, size:', pdfBuffer.length)
 
-    // Return PDF as response
-    return new NextResponse(pdfBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="payslip-${payroll.employeeId?.firstName || 'Unknown'}-${payroll.employeeId?.lastName || 'Employee'}-${payroll.payPeriod?.startDate || 'Unknown'}.pdf"`
-      }
-    })
+    // Return PDF using standardized helper
+    const filename = `payslip-${(payroll as any).employeeId?.firstName || 'Unknown'}-${(payroll as any).employeeId?.lastName || 'Employee'}-${(payroll as any).payPeriod?.startDate || 'Unknown'}.pdf`
+    
+    return pdfResponse(pdfBuffer, { filename })
 
   } catch (error) {
     console.error('Payslip generation error:', error)
