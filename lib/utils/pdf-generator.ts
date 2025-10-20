@@ -9,7 +9,7 @@ import fs from 'fs'
 // Helper function to register fonts
 function registerFonts(doc: any) {
   try {
-    const fontPath = path.join(process.cwd(), 'public', 'fonts')
+  const fontPath = path.join(process.cwd(), 'public', 'fonts')
     const regularFontPath = path.join(fontPath, 'OpenSans-Regular.ttf')
     const boldFontPath = path.join(fontPath, 'OpenSans-Bold.ttf')
     

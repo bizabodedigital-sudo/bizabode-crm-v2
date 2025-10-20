@@ -199,22 +199,22 @@ export function PayrollDetailDialog({ open, onOpenChange, payroll }: PayrollDeta
               <div className="space-y-3">
                 {payroll.items && payroll.items.length > 0 ? (
                   payroll.items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${getItemTypeColor(item.type)}`}></div>
-                        <div>
-                          <div className="font-medium">{item.description}</div>
-                          <div className="text-sm text-muted-foreground capitalize">
-                            {item.type} {item.taxable ? '(Taxable)' : '(Non-taxable)'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`font-medium ${item.type === 'deduction' ? 'text-red-600' : 'text-green-600'}`}>
-                          {item.type === 'deduction' ? '-' : '+'}${item.amount.toLocaleString()}
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${getItemTypeColor(item.type)}`}></div>
+                      <div>
+                        <div className="font-medium">{item.description}</div>
+                        <div className="text-sm text-muted-foreground capitalize">
+                          {item.type} {item.taxable ? '(Taxable)' : '(Non-taxable)'}
                         </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <div className={`font-medium ${item.type === 'deduction' ? 'text-red-600' : 'text-green-600'}`}>
+                        {item.type === 'deduction' ? '-' : '+'}${item.amount.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
                   ))
                 ) : (
                   <div className="text-center text-muted-foreground py-4">

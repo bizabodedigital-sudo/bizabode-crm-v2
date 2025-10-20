@@ -1,48 +1,174 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Key, CheckCircle, AlertCircle, Calendar, Users, Crown } from "lucide-react"
+import { Key, CheckCircle, AlertCircle, Calendar, Users, Crown, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+
+interface LicenseData {
+  key: string
+  plan: string
+  status: string
+  activatedOn: string
+  expiresOn: string
+  maxUsers: number
+  currentUsers: number
+  features: string[]
+}
 
 export function LicenseContent() {
   const [licenseKey, setLicenseKey] = useState("")
   const [isActivating, setIsActivating] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentLicense, setCurrentLicense] = useState<LicenseData | null>(null)
+  const [error, setError] = useState("")
 
-  // Mock license data
-  const currentLicense = {
-    key: "DEMO-LICENSE-KEY-2024",
-    plan: "Professional",
-    status: "active",
-    activatedOn: "2024-01-01",
-    expiresOn: "2025-12-31",
-    maxUsers: 10,
-    currentUsers: 3,
-    features: [
-      "Unlimited Inventory Items",
-      "Advanced CRM Features",
-      "Quote & Invoice Generation",
-      "QR Code Delivery Tracking",
-      "Analytics & Reports",
-      "Email Notifications",
-      "Priority Support",
-      "API Access",
-    ],
+  // Fetch real license data from API
+  useEffect(() => {
+    fetchLicenseData()
+  }, [])
+
+  const fetchLicenseData = async () => {
+    try {
+      setIsLoading(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        setError('Please log in to view license information')
+        return
+      }
+
+      const response = await fetch('/api/license/status', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentLicense(data)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to fetch license data')
+      }
+    } catch (error) {
+      console.error('Error fetching license data:', error)
+      setError('Failed to fetch license data')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleActivate = () => {
+  const handleActivate = async () => {
+    if (!licenseKey.trim()) return
+
     setIsActivating(true)
-    // Simulate API call
-    setTimeout(() => {
+    setError("")
+
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        setError('Please log in to activate license')
+        return
+      }
+
+      const response = await fetch('/api/license/activate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ licenseKey })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentLicense(data)
+        setLicenseKey("")
+        // Refresh license data
+        await fetchLicenseData()
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'License activation failed')
+      }
+    } catch (error) {
+      console.error('Error activating license:', error)
+      setError('License activation failed')
+    } finally {
       setIsActivating(false)
-      setLicenseKey("")
-    }, 2000)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <Key className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">License Management</h1>
+            <p className="text-muted-foreground">Manage your Bizabode license and subscription</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading license information...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <Key className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">License Management</h1>
+            <p className="text-muted-foreground">Manage your Bizabode license and subscription</p>
+          </div>
+        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  if (!currentLicense) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <Key className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">License Management</h1>
+            <p className="text-muted-foreground">Manage your Bizabode license and subscription</p>
+          </div>
+        </div>
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>No License Found</AlertTitle>
+          <AlertDescription>
+            No active license found. Please activate a license key to continue.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   const daysRemaining = Math.floor(
@@ -208,7 +334,14 @@ export function LicenseContent() {
             />
           </div>
           <Button onClick={handleActivate} disabled={!licenseKey || isActivating} className="w-full">
-            {isActivating ? "Activating..." : "Activate License"}
+            {isActivating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Activating...
+              </>
+            ) : (
+              "Activate License"
+            )}
           </Button>
           <Alert>
             <AlertCircle className="h-4 w-4" />

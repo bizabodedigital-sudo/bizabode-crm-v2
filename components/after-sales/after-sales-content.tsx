@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MessageSquare, Star, ThumbsUp, AlertCircle, CheckCircle, Search, Plus } from "lucide-react"
+import { MessageSquare, Star, ThumbsUp, AlertCircle, CheckCircle, Search, Plus, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -21,71 +21,27 @@ import {
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const feedbackData = [
-  {
-    id: "fb-1",
-    customer: "John Smith",
-    email: "john@techcorp.com",
-    rating: 5,
-    comment: "Excellent service and fast delivery. Very satisfied with the products.",
-    date: "2024-10-15",
-    status: "resolved",
-    invoiceNumber: "INV-2024-001",
-  },
-  {
-    id: "fb-2",
-    customer: "Sarah Johnson",
-    email: "sarah@startupco.com",
-    rating: 4,
-    comment: "Good quality products, but delivery took longer than expected.",
-    date: "2024-10-14",
-    status: "pending",
-    invoiceNumber: "INV-2024-002",
-  },
-  {
-    id: "fb-3",
-    customer: "Mike Wilson",
-    email: "mike@enterprise.com",
-    rating: 3,
-    comment: "Product quality is okay, but customer support needs improvement.",
-    date: "2024-10-13",
-    status: "in-progress",
-    invoiceNumber: "INV-2024-003",
-  },
-]
+interface Feedback {
+  id: string
+  customer: string
+  email: string
+  rating: number
+  comment: string
+  date: string
+  status: string
+  invoiceNumber?: string
+}
 
-const supportTickets = [
-  {
-    id: "ticket-1",
-    customer: "Alice Brown",
-    email: "alice@company.com",
-    subject: "Product defect - Wireless Mouse",
-    priority: "high",
-    status: "open",
-    createdAt: "2024-10-16",
-    lastUpdate: "2024-10-16",
-  },
-  {
-    id: "ticket-2",
-    customer: "Bob Davis",
-    email: "bob@business.com",
-    subject: "Request for product replacement",
-    priority: "medium",
-    status: "in-progress",
-    createdAt: "2024-10-15",
-    lastUpdate: "2024-10-16",
-  },
-  {
-    id: "ticket-3",
-    customer: "Carol White",
-    email: "carol@corp.com",
-    subject: "Question about warranty",
-    priority: "low",
-    status: "resolved",
-    createdAt: "2024-10-14",
-    lastUpdate: "2024-10-15",
-  },
-]
+interface SupportTicket {
+  id: string
+  customer: string
+  email: string
+  subject: string
+  priority: string
+  status: string
+  createdAt: string
+  lastUpdate: string
+}
 
 const statusColors = {
   pending: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
@@ -102,10 +58,101 @@ const priorityColors = {
 
 export function AfterSalesContent() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [feedbackData, setFeedbackData] = useState<Feedback[]>([])
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  // Fetch real data from APIs
+  useEffect(() => {
+    fetchAfterSalesData()
+  }, [])
+
+  const fetchAfterSalesData = async () => {
+    try {
+      setIsLoading(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        setError('Please log in to view after-sales data')
+        return
+      }
+
+      // Fetch feedback and support tickets in parallel
+      const [feedbackResponse, ticketsResponse] = await Promise.all([
+        fetch('/api/feedback', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch('/api/support-tickets', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ])
+
+      if (feedbackResponse.ok) {
+        const feedbackData = await feedbackResponse.json()
+        setFeedbackData(feedbackData.data || [])
+      }
+
+      if (ticketsResponse.ok) {
+        const ticketsData = await ticketsResponse.json()
+        setSupportTickets(ticketsData.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching after-sales data:', error)
+      setError('Failed to fetch after-sales data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
   const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false)
 
-  const avgRating = (feedbackData.reduce((sum, fb) => sum + fb.rating, 0) / feedbackData.length).toFixed(1)
-  const satisfactionRate = ((feedbackData.filter((fb) => fb.rating >= 4).length / feedbackData.length) * 100).toFixed(0)
+  // Calculate metrics with safe defaults
+  const avgRating = feedbackData.length > 0 
+    ? (feedbackData.reduce((sum, fb) => sum + fb.rating, 0) / feedbackData.length).toFixed(1)
+    : "0.0"
+  
+  const satisfactionRate = feedbackData.length > 0
+    ? ((feedbackData.filter((fb) => fb.rating >= 4).length / feedbackData.length) * 100).toFixed(0)
+    : "0"
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading after-sales data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <MessageSquare className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">After-Sales Support</h1>
+            <p className="text-muted-foreground">Manage customer feedback and support tickets</p>
+          </div>
+        </div>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <span className="text-red-800 dark:text-red-200">{error}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

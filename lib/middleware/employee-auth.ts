@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken"
 import Employee from "@/lib/models/Employee"
 import connectDB from "@/lib/db"
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production"
+const JWT_SECRET = process.env.JWT_SECRET
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required')
+}
 
 export interface AuthenticatedEmployeeRequest extends NextRequest {
   employee?: any

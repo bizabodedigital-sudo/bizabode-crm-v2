@@ -30,19 +30,28 @@ export default function EmployeeLoginPage() {
     setError("")
 
     try {
-      // For demo purposes, we'll simulate login
-      // In a real app, this would call an API
-      if (employeeId && password === employeeId) {
-        // For demo purposes, create a simple token
-        const token = btoa(JSON.stringify({ employeeId, timestamp: Date.now() }))
-        localStorage.setItem("employeeId", employeeId)
-        localStorage.setItem("employeeName", `Employee ${employeeId}`)
-        localStorage.setItem("employeeToken", token)
+      // Call the secure API endpoint for employee authentication
+      const response = await fetch('/api/auth/employee-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ employeeId, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Store secure token and employee info
+        localStorage.setItem("employeeId", data.employeeId)
+        localStorage.setItem("employeeName", data.employeeName)
+        localStorage.setItem("employeeToken", data.token)
         router.push("/employee/clock")
       } else {
-        setError("Invalid employee ID or password")
+        setError(data.error || "Invalid employee ID or password")
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError("Login failed. Please try again.")
     } finally {
       setLoading(false)

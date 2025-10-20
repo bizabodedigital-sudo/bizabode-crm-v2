@@ -6,7 +6,8 @@ import { checkPermission } from "@/lib/middleware/rbac"
 import { handleValidation } from "@/lib/middleware/validation"
 import { handleQueryValidationBypass } from "@/lib/middleware/validation-bypass"
 import { leadCreateSchema, leadQuerySchema } from "@/lib/validation/schemas"
-import { handleApiError, successResponse, errorResponse, unauthorizedResponse, forbiddenResponse } from "@/lib/utils/error-handler"
+import { handleApiError } from "@/lib/utils/error-handler"
+import { successResponse, errorResponse, unauthorizedResponse, forbiddenResponse } from "@/lib/utils/api-response"
 
 export async function GET(request: NextRequest) {
   try {

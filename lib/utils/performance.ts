@@ -6,12 +6,15 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-
+  
   return (...args: Parameters<T>) => {
     if (timeout) {
       clearTimeout(timeout)
     }
-    timeout = setTimeout(() => func(...args), wait)
+    
+    timeout = setTimeout(() => {
+      func(...args)
+    }, wait)
   }
 }
 
@@ -20,13 +23,13 @@ export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
-  let inThrottle: boolean
-
+  let inThrottle: boolean = false
+  
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args)
       inThrottle = true
-      setTimeout(() => (inThrottle = false), limit)
+      setTimeout(() => inThrottle = false, limit)
     }
   }
 }
@@ -37,14 +40,14 @@ export function memoize<T extends (...args: any[]) => any>(
   keyGenerator?: (...args: Parameters<T>) => string
 ): T {
   const cache = new Map<string, ReturnType<T>>()
-
+  
   return ((...args: Parameters<T>) => {
     const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args)
     
     if (cache.has(key)) {
-      return cache.get(key)
+      return cache.get(key)!
     }
-
+    
     const result = func(...args)
     cache.set(key, result)
     return result
@@ -52,40 +55,60 @@ export function memoize<T extends (...args: any[]) => any>(
 }
 
 // Lazy loading utility
-export function createLazyComponent<T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>
-): React.LazyExoticComponent<T> {
-  return React.lazy(importFunc)
-}
-
-// Virtual scrolling helper
-export function calculateVirtualScrollItems(
-  containerHeight: number,
-  itemHeight: number,
-  scrollTop: number,
-  totalItems: number
+export function createLazyLoader<T>(
+  loader: () => Promise<T>,
+  cache: Map<string, T> = new Map()
 ) {
-  const visibleCount = Math.ceil(containerHeight / itemHeight)
-  const startIndex = Math.floor(scrollTop / itemHeight)
-  const endIndex = Math.min(startIndex + visibleCount, totalItems)
-  
-  return {
-    startIndex,
-    endIndex,
-    visibleCount,
-    totalHeight: totalItems * itemHeight
+  return async (key: string): Promise<T> => {
+    if (cache.has(key)) {
+      return cache.get(key)!
+    }
+    
+    const result = await loader()
+    cache.set(key, result)
+    return result
   }
 }
 
-// Image optimization helper
+// Batch processing for API calls
+export function createBatchProcessor<T, R>(
+  processor: (items: T[]) => Promise<R[]>,
+  batchSize: number = 10,
+  delay: number = 100
+) {
+  const queue: T[] = []
+  let timeout: NodeJS.Timeout | null = null
+  
+  return (item: T): Promise<R> => {
+    return new Promise((resolve, reject) => {
+      queue.push(item)
+      
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+      
+      timeout = setTimeout(async () => {
+        if (queue.length >= batchSize || queue.length > 0) {
+          try {
+            const batch = queue.splice(0, batchSize)
+            const results = await processor(batch)
+            resolve(results[0]) // Return first result for simplicity
+          } catch (error) {
+            reject(error)
+          }
+        }
+      }, delay)
+    })
+  }
+}
+
+// Image optimization
 export function optimizeImageUrl(
   url: string,
   width?: number,
   height?: number,
   quality: number = 80
 ): string {
-  // This would integrate with your image optimization service
-  // For example, with Next.js Image Optimization or Cloudinary
   const params = new URLSearchParams()
   
   if (width) params.set('w', width.toString())
@@ -95,158 +118,105 @@ export function optimizeImageUrl(
   return `${url}?${params.toString()}`
 }
 
-// Bundle size analyzer helper
-export function analyzeBundleSize() {
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-    // This would integrate with webpack-bundle-analyzer or similar
-    console.log('Bundle analysis would be available in development mode')
-  }
-}
-
 // Memory usage monitoring
-export function monitorMemoryUsage() {
-  if (typeof window !== 'undefined' && 'memory' in performance) {
-    const memory = (performance as any).memory
+export function getMemoryUsage(): {
+  used: number
+  total: number
+  percentage: number
+} {
+  if (typeof process !== 'undefined' && process.memoryUsage) {
+    const usage = process.memoryUsage()
     return {
-      used: memory.usedJSHeapSize,
-      total: memory.totalJSHeapSize,
-      limit: memory.jsHeapSizeLimit,
-      usage: (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100
+      used: usage.heapUsed,
+      total: usage.heapTotal,
+      percentage: (usage.heapUsed / usage.heapTotal) * 100
     }
   }
-  return null
-}
-
-// Performance metrics collector
-export class PerformanceMetrics {
-  private metrics: Map<string, number[]> = new Map()
-
-  startTiming(label: string): () => void {
-    const start = performance.now()
-    
-    return () => {
-      const duration = performance.now() - start
-      this.recordMetric(label, duration)
-    }
-  }
-
-  recordMetric(label: string, value: number): void {
-    if (!this.metrics.has(label)) {
-      this.metrics.set(label, [])
-    }
-    this.metrics.get(label)!.push(value)
-  }
-
-  getMetrics(): Record<string, { avg: number; min: number; max: number; count: number }> {
-    const result: Record<string, { avg: number; min: number; max: number; count: number }> = {}
-    
-    for (const [label, values] of this.metrics.entries()) {
-      const avg = values.reduce((a, b) => a + b, 0) / values.length
-      const min = Math.min(...values)
-      const max = Math.max(...values)
-      
-      result[label] = { avg, min, max, count: values.length }
-    }
-    
-    return result
-  }
-
-  clearMetrics(): void {
-    this.metrics.clear()
-  }
-}
-
-// Singleton instance
-export const performanceMetrics = new PerformanceMetrics()
-
-// React performance hooks
-export function usePerformanceTiming(label: string) {
-  const [timing, setTiming] = React.useState<number | null>(null)
   
-  const startTiming = React.useCallback(() => {
-    const start = performance.now()
-    return () => {
-      const duration = performance.now() - start
-      setTiming(duration)
-      performanceMetrics.recordMetric(label, duration)
-    }
-  }, [label])
-  
-  return { timing, startTiming }
+  return { used: 0, total: 0, percentage: 0 }
 }
 
-// Database query optimization helpers
-export function optimizeQuery(query: any, options: {
-  limit?: number
-  skip?: number
-  sort?: Record<string, 1 | -1>
-  select?: string
-  populate?: string[]
-}): any {
-  let optimizedQuery = query
-
-  if (options.limit) {
-    optimizedQuery = optimizedQuery.limit(options.limit)
+// Performance timing
+export class PerformanceTimer {
+  private startTime: number = 0
+  private endTime: number = 0
+  
+  start(): void {
+    this.startTime = performance.now()
   }
-
-  if (options.skip) {
-    optimizedQuery = optimizedQuery.skip(options.skip)
+  
+  end(): number {
+    this.endTime = performance.now()
+    return this.endTime - this.startTime
   }
-
-  if (options.sort) {
-    optimizedQuery = optimizedQuery.sort(options.sort)
+  
+  getDuration(): number {
+    return this.endTime - this.startTime
   }
-
-  if (options.select) {
-    optimizedQuery = optimizedQuery.select(options.select)
-  }
-
-  if (options.populate) {
-    options.populate.forEach(field => {
-      optimizedQuery = optimizedQuery.populate(field)
-    })
-  }
-
-  return optimizedQuery
 }
 
 // Cache management
-export class CacheManager {
-  private cache = new Map<string, { data: any; expiry: number }>()
-  private defaultTTL = 5 * 60 * 1000 // 5 minutes
-
-  set(key: string, data: any, ttl: number = this.defaultTTL): void {
-    const expiry = Date.now() + ttl
-    this.cache.set(key, { data, expiry })
+export class CacheManager<T> {
+  private cache = new Map<string, { data: T; timestamp: number; ttl: number }>()
+  
+  set(key: string, data: T, ttl: number = 300000): void { // 5 minutes default
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    })
   }
-
-  get(key: string): any | null {
+  
+  get(key: string): T | null {
     const item = this.cache.get(key)
     
     if (!item) {
       return null
     }
-
-    if (Date.now() > item.expiry) {
+    
+    if (Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key)
       return null
     }
-
+    
     return item.data
   }
-
-  delete(key: string): boolean {
-    return this.cache.delete(key)
-  }
-
+  
   clear(): void {
     this.cache.clear()
   }
-
+  
   size(): number {
     return this.cache.size
   }
 }
 
-// Singleton cache instance
-export const cacheManager = new CacheManager()
+// Database query optimization
+export function createQueryOptimizer() {
+  const queryCache = new Map<string, any>()
+  
+  return {
+    // Add lean() to queries for better performance
+    optimizeQuery: (query: any) => {
+      return query.lean()
+    },
+    
+    // Cache frequently accessed data
+    cacheQuery: (key: string, query: any, ttl: number = 300000) => {
+      const cached = queryCache.get(key)
+      if (cached && Date.now() - cached.timestamp < ttl) {
+        return cached.data
+      }
+      
+      return null
+    },
+    
+    // Set query cache
+    setQueryCache: (key: string, data: any) => {
+      queryCache.set(key, {
+        data,
+        timestamp: Date.now()
+      })
+    }
+  }
+}

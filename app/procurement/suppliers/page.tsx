@@ -40,7 +40,24 @@ export default function SuppliersPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('/api/suppliers')
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to view suppliers.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const response = await fetch('/api/suppliers', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
       const data = await response.json()
       if (data.success) {
         setSuppliers(data.data)
@@ -65,9 +82,25 @@ export default function SuppliersPage() {
     }
 
     try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to delete suppliers.",
+          variant: "destructive",
+        })
+        return
+      }
+
       const response = await fetch(`/api/suppliers/${supplierId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
+      
       const data = await response.json()
       
       if (data.success) {
