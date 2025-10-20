@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
     ])
 
     // Total pipeline value
-    const totalPipeline = pipelineByStage.reduce((sum, stage) => sum + stage.totalValue, 0)
-    const totalWeightedPipeline = pipelineByStage.reduce((sum, stage) => sum + stage.weightedValue, 0)
+    const totalPipeline = pipelineByStage.reduce((sum: number, stage: { totalValue: number }) => sum + stage.totalValue, 0)
+    const totalWeightedPipeline = pipelineByStage.reduce((sum: number, stage: { weightedValue: number }) => sum + stage.weightedValue, 0)
 
     // Won opportunities
     const wonStats = await Opportunity.aggregate([

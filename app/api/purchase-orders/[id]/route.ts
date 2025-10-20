@@ -95,7 +95,10 @@ export async function PUT(
       }))
       
       // Recalculate total
-      purchaseOrder.total = purchaseOrder.items.reduce((sum, item) => sum + item.totalCost, 0)
+      purchaseOrder.total = purchaseOrder.items.reduce(
+        (sum: number, item: { totalCost: number }) => sum + (item.totalCost || 0),
+        0
+      )
     }
 
     if (body.notes !== undefined) {
