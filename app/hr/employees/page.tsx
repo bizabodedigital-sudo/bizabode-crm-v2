@@ -333,6 +333,12 @@ export default function EmployeesPage() {
           selectedEmployee
             ? {
                 ...selectedEmployee,
+                managerId: selectedEmployee.managerId
+                  ? {
+                      ...selectedEmployee.managerId,
+                      position: selectedEmployee.managerId.position || 'Manager'
+                    }
+                  : undefined,
                 createdBy: selectedEmployee.createdBy || {
                   name: 'System',
                   email: 'system@bizabode.com'
