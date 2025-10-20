@@ -78,7 +78,9 @@ export async function POST(
       html: emailHTML,
       attachments: [{
         filename: `invoice-${invoiceData.invoiceNumber}.pdf`,
-        content: pdfBuffer
+        content: typeof pdfBuffer === 'string' 
+          ? Buffer.from(pdfBuffer, 'base64') 
+          : pdfBuffer,
       }]
     })
 
