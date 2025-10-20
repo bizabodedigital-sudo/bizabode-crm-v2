@@ -28,7 +28,7 @@ export async function authenticateToken(request: NextRequest): Promise<{
       return { authenticated: false, error: "No token provided" }
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, JWT_SECRET || 'fallback-secret') as any
 
     await connectDB()
     const user = await User.findById(decoded.userId).select("-password")
@@ -63,7 +63,7 @@ export async function authenticateToken(request: NextRequest): Promise<{
 }
 
 export function generateToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, {
+  return jwt.sign({ userId }, JWT_SECRET || 'fallback-secret', {
     expiresIn: process.env.JWT_EXPIRE || "7d",
   })
 }

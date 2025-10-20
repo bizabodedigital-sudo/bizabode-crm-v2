@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+// Express types not needed for Next.js API routes
 import mongoose from 'mongoose'
 
 export interface HRAppError extends Error {

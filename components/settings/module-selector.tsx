@@ -79,16 +79,21 @@ export function ModuleSelector({ onModuleToggle, onFeatureToggle }: ModuleSelect
   }
 
   const handleFeatureToggle = (moduleName: string, featureName: string, enabled: boolean) => {
-    setModules(prev => ({
-      ...prev,
-      [moduleName]: {
-        ...prev[moduleName as keyof typeof modules],
-        features: {
-          ...prev[moduleName as keyof typeof modules].features,
-          [featureName]: enabled
+    setModules(prev => {
+      const currentModule = prev[moduleName as keyof typeof modules]
+      const currentFeatures = 'features' in currentModule ? currentModule.features : {}
+      
+      return {
+        ...prev,
+        [moduleName]: {
+          ...currentModule,
+          features: {
+            ...currentFeatures,
+            [featureName]: enabled
+          }
         }
       }
-    }))
+    })
     
     onFeatureToggle(moduleName, featureName, enabled)
   }
@@ -133,7 +138,7 @@ export function ModuleSelector({ onModuleToggle, onFeatureToggle }: ModuleSelect
                 </div>
               </CardHeader>
               
-              {config.features && config.enabled && (
+              {'features' in config && config.features && config.enabled && (
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Features</Label>
@@ -141,7 +146,7 @@ export function ModuleSelector({ onModuleToggle, onFeatureToggle }: ModuleSelect
                       {Object.entries(config.features).map(([featureName, enabled]) => (
                         <div key={featureName} className="flex items-center space-x-2">
                           <Switch
-                            checked={enabled}
+                            checked={enabled as boolean}
                             onCheckedChange={(checked) => 
                               handleFeatureToggle(moduleName, featureName, checked)
                             }

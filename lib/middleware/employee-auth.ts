@@ -28,7 +28,7 @@ export async function authenticateEmployeeToken(request: NextRequest): Promise<{
       return { authenticated: false, error: "No token provided" }
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, JWT_SECRET || 'fallback-secret') as any
 
     await connectDB()
     const employee = await Employee.findById(decoded.employeeId)
@@ -63,7 +63,7 @@ export async function authenticateEmployeeToken(request: NextRequest): Promise<{
 }
 
 export function generateEmployeeToken(employeeId: string, companyId: string): string {
-  return jwt.sign({ employeeId, companyId, role: 'employee' }, JWT_SECRET, {
+  return jwt.sign({ employeeId, companyId, role: 'employee' }, JWT_SECRET || 'fallback-secret', {
     expiresIn: process.env.JWT_EXPIRE || "7d",
   })
 }

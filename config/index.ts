@@ -2,7 +2,7 @@
 export * from './modules'
 export * from './business-types'
 export * from './regional-compliance'
-export * from './feature-flags'
+export { FEATURE_FLAGS, isFeatureEnabled as isFeatureFlagEnabled } from './feature-flags'
 
 // Configuration manager
 export class ConfigurationManager {
@@ -51,7 +51,7 @@ export class ConfigurationManager {
 
   private getEnabledFeatures(): string[] {
     return Object.entries(FEATURE_FLAGS)
-      .filter(([_, flag]) => flag.enabled)
+      .filter(([_, flag]: [string, any]) => flag.enabled)
       .map(([name, _]) => name)
   }
 

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+// Express types not needed for Next.js API routes
 import Joi from 'joi'
 
 // Employee validation schemas
