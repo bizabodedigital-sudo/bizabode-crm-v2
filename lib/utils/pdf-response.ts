@@ -28,7 +28,7 @@ export function pdfResponse(
     disposition = 'attachment'
   } = options
 
-  return new Response(pdfBuffer, {
+  return new Response(pdfBuffer as any, {
     headers: {
       'Content-Type': contentType,
       'Content-Disposition': `${disposition}; filename="${filename}"`,
@@ -51,7 +51,7 @@ export function fileResponse(
   filename: string,
   contentType: string
 ): Response {
-  return new Response(fileBuffer, {
+  return new Response(fileBuffer as any, {
     headers: {
       'Content-Type': contentType,
       'Content-Disposition': `attachment; filename="${filename}"`,

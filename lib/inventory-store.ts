@@ -46,7 +46,7 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
     try {
       const updatedItem = await apiClient.updateItem(id, updates)
       set((state) => ({
-        items: state.items.map((item) => (item.id === id || item._id === id ? updatedItem : item)),
+        items: state.items.map((item) => (item.id === id || (item as any)._id === id ? updatedItem : item)),
       }))
     } catch (error) {
       console.error("Failed to update item:", error)
@@ -57,7 +57,7 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
   deleteItem: async (id) => {
     try {
       await apiClient.deleteItem(id)
-      set((state) => ({ items: state.items.filter((item) => item.id !== id && item._id !== id) }))
+      set((state) => ({ items: state.items.filter((item) => item.id !== id && (item as any)._id !== id) }))
     } catch (error) {
       console.error("Failed to delete item:", error)
       throw error
@@ -68,7 +68,7 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
     try {
       const response = await apiClient.adjustStock(id, adjustment, reason)
       set((state) => ({
-        items: state.items.map((item) => (item.id === id || item._id === id ? response.item : item)),
+        items: state.items.map((item) => (item.id === id || (item as any)._id === id ? response.item : item)),
       }))
     } catch (error) {
       console.error("Failed to adjust stock:", error)

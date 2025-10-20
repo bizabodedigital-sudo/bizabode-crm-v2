@@ -1,8 +1,10 @@
 import { EmailService } from './email-service'
 import { Item } from '@/lib/models/Item'
-import { Invoice } from '@/lib/models/Invoice'
-import { User } from '@/lib/models/User'
+import { IInvoice } from '@/lib/models/Invoice'
+import { IUser } from '@/lib/models/User'
 import { connectDB } from '@/lib/db'
+import User from '@/lib/models/User'
+import Invoice from '@/lib/models/Invoice'
 
 export class NotificationService {
   /**

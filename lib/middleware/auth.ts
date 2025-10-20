@@ -65,6 +65,6 @@ export async function authenticateToken(request: NextRequest): Promise<{
 export function generateToken(userId: string): string {
   return jwt.sign({ userId }, JWT_SECRET || 'fallback-secret', {
     expiresIn: process.env.JWT_EXPIRE || "7d",
-  })
+  } as jwt.SignOptions)
 }
 

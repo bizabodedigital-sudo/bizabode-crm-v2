@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { getAuthHeaders } from "@/lib/utils/auth-headers"
 
 interface LeaveRequest {
   _id: string
@@ -37,11 +38,11 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
   
   const [formData, setFormData] = useState({
     employeeId: "",
-    leaveType: "vacation" as const,
+    leaveType: "vacation" as 'vacation' | 'sick' | 'personal' | 'maternity' | 'paternity' | 'bereavement' | 'other',
     startDate: "",
     endDate: "",
     reason: "",
-    status: "pending" as const,
+    status: "pending" as 'pending' | 'approved' | 'rejected' | 'cancelled',
     notes: ""
   })
 
@@ -64,15 +65,6 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
     }
   }, [open, leave])
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("bizabode_token")
-    return token
-      ? {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      : { 'Content-Type': 'application/json' }
-  }
 
   const fetchEmployees = async () => {
     try {
@@ -157,7 +149,7 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
 
       const response = await fetch(url, {
         method,
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders() as HeadersInit,
         body: JSON.stringify(payload)
       })
       

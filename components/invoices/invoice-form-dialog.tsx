@@ -130,6 +130,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
     const invoiceData = {
       ...formData,
       companyId: company?.id || "company-1",
+      invoiceNumber: invoice?.invoiceNumber || `INV-${Date.now()}`,
       items: lineItems,
       subtotal,
       tax,

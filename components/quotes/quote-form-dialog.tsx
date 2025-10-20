@@ -129,6 +129,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
     const quoteData = {
       ...formData,
       companyId: company?.id || "company-1",
+      quoteNumber: quote?.quoteNumber || `QUO-${Date.now()}`,
       items: lineItems,
       subtotal,
       tax,

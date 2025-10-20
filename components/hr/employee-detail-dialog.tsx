@@ -137,7 +137,7 @@ export function EmployeeDetailDialog({ open, onOpenChange, employee }: EmployeeD
             {getStatusBadge(employee.status)}
             {getEmploymentTypeBadge(employee.employmentType)}
             <span className="text-sm text-muted-foreground">
-              Hired {format(new Date(employee.hireDate), 'MMM dd, yyyy')}
+              Hired {employee.hireDate ? format(new Date(employee.hireDate), 'MMM dd, yyyy') : 'N/A'}
             </span>
           </div>
 

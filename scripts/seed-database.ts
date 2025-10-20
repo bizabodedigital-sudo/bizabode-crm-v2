@@ -35,7 +35,7 @@ async function clearDatabase() {
     ];
     
     for (const collection of collections) {
-      await mongoose.connection.db.collection(collection).deleteMany({});
+      await mongoose.connection.db?.collection(collection).deleteMany({});
       console.log(`✅ Cleared ${collection} collection`);
     }
     

@@ -216,7 +216,7 @@ export class ApiDocumentation {
       
       for (const [key, value] of Object.entries(schema._def.shape())) {
         properties[key] = this.convertZodToOpenAPI(value)
-        if (value._def.required !== false) {
+        if ((value as any)._def.required !== false) {
           required.push(key)
         }
       }

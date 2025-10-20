@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plus, Trash2, DollarSign } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { getAuthHeaders } from "@/lib/utils/auth-headers"
 
 interface PayrollItem {
   type: 'salary' | 'overtime' | 'bonus' | 'commission' | 'allowance' | 'deduction'
@@ -53,9 +54,9 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
       endDate: ""
     },
     items: [] as PayrollItem[],
-    status: "draft" as const,
+    status: "draft" as 'draft' | 'approved' | 'paid' | 'cancelled',
     paymentDate: "",
-    paymentMethod: "bank_transfer" as const,
+    paymentMethod: "bank_transfer" as 'bank_transfer' | 'check' | 'cash',
     notes: ""
   })
 
@@ -81,15 +82,6 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
     }
   }, [open, payroll])
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("bizabode_token")
-    return token
-      ? {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      : { 'Content-Type': 'application/json' }
-  }
 
   const fetchEmployees = async () => {
     try {
@@ -189,7 +181,7 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
 
       const response = await fetch(url, {
         method,
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders() as HeadersInit,
         body: JSON.stringify(payload)
       })
       

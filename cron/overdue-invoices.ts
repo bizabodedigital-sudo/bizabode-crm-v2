@@ -43,8 +43,8 @@ export function startOverdueInvoiceCheck() {
       
       // Process each company
       for (const [companyId, data] of Object.entries(invoicesByCompany)) {
-        const company = data.company
-        const invoices = data.invoices
+        const company = (data as any).company
+        const invoices = (data as any).invoices
         
         // Get admin users for this company
         const adminUsers = await User.find({
@@ -55,10 +55,10 @@ export function startOverdueInvoiceCheck() {
         if (adminUsers.length === 0) continue
         
         // Calculate total overdue amount
-        const totalOverdue = invoices.reduce((sum, invoice) => sum + invoice.total, 0)
+        const totalOverdue = invoices.reduce((sum: number, invoice: any) => sum + invoice.total, 0)
         
         // Prepare email content
-        const invoiceList = invoices.map(invoice => {
+        const invoiceList = invoices.map((invoice: any) => {
           const daysOverdue = Math.floor((today.getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24))
           return `• ${invoice.invoiceNumber} - $${invoice.total.toFixed(2)} (${daysOverdue} days overdue)`
         }).join('\n')
@@ -105,7 +105,7 @@ export function startOverdueInvoiceCheck() {
         
         await Invoice.updateMany(
           {
-            _id: { $in: invoices.filter(inv => inv.dueDate < sevenDaysAgo).map(inv => inv._id) },
+            _id: { $in: invoices.filter((inv: any) => inv.dueDate < sevenDaysAgo).map((inv: any) => inv._id) },
             status: 'sent'
           },
           { status: 'overdue' }

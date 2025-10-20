@@ -1,6 +1,19 @@
 // Express types not needed for Next.js API routes
 import Joi from 'joi'
 
+// Define basic types for compatibility
+interface Request {
+  url: string
+  method: string
+  query: any
+  body: any
+}
+
+interface Response {
+  status: (code: number) => { json: (data: any) => void }
+  json: (data: any) => void
+}
+
 // Employee validation schemas
 export const employeeValidation = {
   create: Joi.object({
@@ -214,7 +227,7 @@ export const timeTrackingValidation = {
 
 // Generic validation middleware
 export const validateRequest = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: any) => {
     const { error } = schema.validate(req.body, { abortEarly: false })
     
     if (error) {
@@ -223,7 +236,7 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
         message: detail.message
       }))
       
-      return res.status(400).json({
+      return (res as any).status(400).json({
         success: false,
         error: 'Validation failed',
         details: errorDetails
@@ -236,7 +249,7 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
 
 // Query parameter validation
 export const validateQuery = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: any) => {
     const { error } = schema.validate(req.query, { abortEarly: false })
     
     if (error) {

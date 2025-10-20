@@ -1,7 +1,7 @@
 import cron from 'node-cron'
 import { connectDB } from '../lib/db'
 import Item from '../lib/models/Item'
-import { EmailService } from '../lib/services/email-service'
+import nodemailer from 'nodemailer'
 
 /**
  * Daily low stock check - runs at 8 AM every day
@@ -40,8 +40,8 @@ export function startLowStockCheck() {
       
       // Send email alerts for each company
       for (const [companyId, data] of Object.entries(itemsByCompany)) {
-        const company = data.company
-        const items = data.items
+        const company = (data as any).company
+        const items = (data as any).items
         
         // Get admin users for this company
         const User = (await import('../lib/models/User')).default
@@ -53,12 +53,12 @@ export function startLowStockCheck() {
         if (adminUsers.length === 0) continue
         
         // Prepare email content
-        const itemList = items.map(item => 
+        const itemList = items.map((item: any) => 
           `• ${item.name} (SKU: ${item.sku}) - ${item.quantity} remaining (Reorder at: ${item.reorderLevel})`
         ).join('\n')
         
-        const criticalItems = items.filter(item => item.critical)
-        const criticalList = criticalItems.map(item => 
+        const criticalItems = items.filter((item: any) => item.critical)
+        const criticalList = criticalItems.map((item: any) => 
           `• ${item.name} (SKU: ${item.sku}) - CRITICAL ITEM OUT OF STOCK!`
         ).join('\n')
         
@@ -93,7 +93,18 @@ export function startLowStockCheck() {
         // Send email to all admin users
         for (const user of adminUsers) {
           try {
-            await EmailService.sendMail({
+            const transporter = nodemailer.createTransport({
+              host: process.env.SMTP_HOST || "smtp.gmail.com",
+              port: parseInt(process.env.SMTP_PORT || "587"),
+              secure: false,
+              auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASSWORD,
+              },
+            })
+            
+            await transporter.sendMail({
+              from: process.env.SMTP_FROM || "noreply@bizabode.com",
               to: user.email,
               subject: `Low Stock Alert - ${items.length} items need attention`,
               html: emailContent
@@ -117,24 +128,3 @@ export function startLowStockCheck() {
   console.log('Low stock check cron job scheduled (daily at 8 AM)')
 }
 
-// Helper method to send custom emails
-class EmailService {
-  static async sendMail(options: { to: string, subject: string, html: string }) {
-    const nodemailer = await import('nodemailer')
-    
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    })
-    
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || "noreply@bizabode.com",
-      ...options
-    })
-  }
-}

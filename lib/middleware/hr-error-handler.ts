@@ -1,6 +1,17 @@
 // Express types not needed for Next.js API routes
 import mongoose from 'mongoose'
 
+// Define basic types for compatibility
+interface Request {
+  url: string
+  method: string
+}
+
+interface Response {
+  status: (code: number) => { json: (data: any) => void }
+  json: (data: any) => void
+}
+
 export interface HRAppError extends Error {
   statusCode?: number
   isOperational?: boolean
@@ -73,7 +84,7 @@ export const hrErrorHandler = (
   error: HRAppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: any
 ) => {
   let statusCode = error.statusCode || 500
   let message = error.message || 'Internal Server Error'
@@ -112,11 +123,11 @@ export const hrErrorHandler = (
     statusCode = 400
     message = 'Invalid ID format'
     details = { field: error.path, value: error.value }
-  } else if (error.code === 11000) {
+  } else if ((error as any).code === 11000) {
     statusCode = 409
     message = 'Duplicate Entry'
-    const field = Object.keys(error.keyPattern || {})[0]
-    details = { field, value: error.keyValue?.[field] }
+    const field = Object.keys((error as any).keyPattern || {})[0]
+    details = { field, value: (error as any).keyValue?.[field] }
   }
 
   // Handle JWT errors
@@ -177,28 +188,28 @@ export const hrErrorHandler = (
     errorResponse.stack = error.stack
   }
 
-  res.status(statusCode).json(errorResponse)
+  (res as any).status(statusCode as number).json(errorResponse)
 }
 
 // Async error wrapper
 export const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: any) => {
     Promise.resolve(fn(req, res, next)).catch(next)
   }
 }
 
 // 404 handler for HR routes
 export const hrNotFoundHandler = (req: Request, res: Response) => {
-  const errorResponse: ErrorResponse = {
+  const errorResponse = {
     success: false,
     error: 'NotFoundError',
     message: `HR route ${req.method} ${req.url} not found`,
     statusCode: 404,
     timestamp: new Date().toISOString(),
     path: req.url
-  }
+  } as any
 
-  res.status(404).json(errorResponse)
+  (res as any).status(404).json(errorResponse)
 }
 
 // HR-specific validation helpers
@@ -252,7 +263,7 @@ export const sendErrorResponse = (
     message,
     statusCode,
     timestamp: new Date().toISOString(),
-    path: res.req.url,
+    path: (res as any).req?.url || 'unknown',
     details
   }
 

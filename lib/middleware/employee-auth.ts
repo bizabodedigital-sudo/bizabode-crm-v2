@@ -65,5 +65,5 @@ export async function authenticateEmployeeToken(request: NextRequest): Promise<{
 export function generateEmployeeToken(employeeId: string, companyId: string): string {
   return jwt.sign({ employeeId, companyId, role: 'employee' }, JWT_SECRET || 'fallback-secret', {
     expiresIn: process.env.JWT_EXPIRE || "7d",
-  })
+  } as jwt.SignOptions)
 }

@@ -101,7 +101,7 @@ export function ItemTable() {
       console.error('Export failed:', error)
       toast({
         title: "Error",
-        description: `Failed to export inventory data: ${error.message}`,
+        description: `Failed to export inventory data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
     }
@@ -145,7 +145,7 @@ export function ItemTable() {
       console.error('Export failed:', error)
       toast({
         title: "Error",
-        description: `Failed to generate inventory report: ${error.message}`,
+        description: `Failed to generate inventory report: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
     }

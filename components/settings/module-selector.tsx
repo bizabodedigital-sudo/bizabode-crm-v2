@@ -150,7 +150,6 @@ export function ModuleSelector({ onModuleToggle, onFeatureToggle }: ModuleSelect
                             onCheckedChange={(checked) => 
                               handleFeatureToggle(moduleName, featureName, checked)
                             }
-                            size="sm"
                           />
                           <Label className="text-xs capitalize">
                             {featureName.replace(/([A-Z])/g, ' $1').trim()}

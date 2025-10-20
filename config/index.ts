@@ -3,6 +3,7 @@ export * from './modules'
 export * from './business-types'
 export * from './regional-compliance'
 export { FEATURE_FLAGS, isFeatureEnabled as isFeatureFlagEnabled } from './feature-flags'
+import { FEATURE_FLAGS } from './feature-flags'
 
 // Configuration manager
 export class ConfigurationManager {

@@ -15,11 +15,7 @@ export class DatabaseOptimizer {
   // Optimize connection settings
   optimizeConnection(): void {
     mongoose.set('bufferCommands', false)
-    mongoose.set('bufferMaxEntries', 0)
-    mongoose.set('maxPoolSize', 10)
-    mongoose.set('serverSelectionTimeoutMS', 5000)
-    mongoose.set('socketTimeoutMS', 45000)
-    mongoose.set('family', 4) // Use IPv4, skip trying IPv6
+    // Removed invalid mongoose.set calls that are not valid MongooseOptions
   }
   
   // Create optimized indexes

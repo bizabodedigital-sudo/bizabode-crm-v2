@@ -134,7 +134,7 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
 
       const response = await fetch(url, {
         method,
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders() as HeadersInit,
         body: JSON.stringify(payload)
       })
       

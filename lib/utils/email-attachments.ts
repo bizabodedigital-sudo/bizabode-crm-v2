@@ -37,7 +37,7 @@ export async function sendPdfEmail(
       ? Buffer.from(pdfBuffer, 'base64')
       : pdfBuffer
 
-    const result = await emailSender.sendEmail({
+    const result = await (emailSender as any).sendEmail({
       to,
       subject,
       html,
@@ -92,7 +92,7 @@ export async function sendEmailWithAttachments(
       contentType: attachment.contentType || 'application/octet-stream'
     }))
 
-    const result = await emailSender.sendEmail({
+    const result = await (emailSender as any).sendEmail({
       to,
       subject,
       html,
@@ -120,7 +120,7 @@ export async function sendEmailWithAttachments(
 export function createAttachment(
   filename: string,
   content: Buffer | string,
-  options: EmailAttachmentOptions = {}
+  options: Partial<EmailAttachmentOptions> = {}
 ): {
   filename: string
   content: Buffer
