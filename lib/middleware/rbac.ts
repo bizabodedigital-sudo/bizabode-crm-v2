@@ -109,10 +109,10 @@ export function rbacMiddleware(allowedRoles: UserRole[]) {
   }
 }
 
-// Alias for authorizeRole
-export function authorizeRole(...allowedRoles: UserRole[]) {
-  return (user: { role: UserRole }): boolean => {
-    return allowedRoles.includes(user.role)
-  }
+// Alias for authorizeRole - supports both single role and array of roles
+export async function authorizeRole(user: { role: UserRole }, allowedRoles: UserRole | UserRole[]): Promise<{ success: boolean }> {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+  const success = roles.includes(user.role)
+  return { success }
 }
 
