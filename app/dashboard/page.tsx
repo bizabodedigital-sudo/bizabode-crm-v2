@@ -63,7 +63,7 @@ export default function DashboardPage() {
   const lowStockItems = items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0).length
   const outOfStockItems = items.filter(item => item.quantity === 0).length
   const activeQuotes = quotes.filter(quote => quote.status === "sent" || quote.status === "draft").length
-  const pendingInvoices = invoices.filter(inv => inv.status === "pending" || inv.status === "draft").length
+  const pendingInvoices = invoices.filter(inv => inv.status === "sent" || inv.status === "draft").length
   const monthlyRevenue = invoices
     .filter(inv => {
       const invDate = new Date(inv.createdAt)
