@@ -336,7 +336,7 @@ export default function EmployeesPage() {
                 managerId: selectedEmployee.managerId
                   ? {
                       ...selectedEmployee.managerId,
-                      position: selectedEmployee.managerId.position || 'Manager'
+                      position: 'Manager'
                     }
                   : undefined,
                 createdBy: selectedEmployee.createdBy || {
