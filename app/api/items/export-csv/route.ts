@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       // Generate PDF template
       const pdfBuffer = await generateInventoryTemplate(items, company)
       
-      const response = new NextResponse(pdfBuffer, {
+      const response = new NextResponse(pdfBuffer as any, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="inventory-stock-check-${new Date().toISOString().split('T')[0]}.pdf"`
