@@ -329,7 +329,18 @@ export default function EmployeesPage() {
       <EmployeeDetailDialog
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
-        employee={selectedEmployee}
+        employee={
+          selectedEmployee
+            ? {
+                ...selectedEmployee,
+                createdBy: selectedEmployee.createdBy || {
+                  name: 'System',
+                  email: 'system@bizabode.com'
+                },
+                createdAt: selectedEmployee.createdAt || new Date().toISOString()
+              }
+            : null
+        }
       />
     </div>
   )
