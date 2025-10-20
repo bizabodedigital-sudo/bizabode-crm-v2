@@ -4,10 +4,9 @@ import PerformanceReview from '@/lib/models/PerformanceReview'
 import { authenticateToken } from '@/lib/middleware/auth'
 import { validateRequest } from '@/lib/middleware/hr-validation'
 import { performanceValidation } from '@/lib/middleware/hr-validation'
-import { asyncHandler, hrErrorHandler } from '@/lib/middleware/hr-error-handler'
 
 export async function GET(request: NextRequest) {
-  return asyncHandler(async (req: NextRequest) => {
+  try {
     await connectDB()
     
     const authResult = await authenticateToken(request)
@@ -58,11 +57,17 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     })
-  })(request)
+  } catch (error) {
+    console.error('Performance GET error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch performance reviews' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
-  return asyncHandler(async (req: NextRequest) => {
+  try {
     await connectDB()
     
     const authResult = await authenticateToken(request)
@@ -129,5 +134,11 @@ export async function POST(request: NextRequest) {
       data: review,
       message: 'Performance review created successfully'
     }, { status: 201 })
-  })(request)
+  } catch (error) {
+    console.error('Performance POST error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create performance review' },
+      { status: 500 }
+    )
+  }
 }
