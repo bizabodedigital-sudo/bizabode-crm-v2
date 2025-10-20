@@ -17,8 +17,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return errorResponse("Unauthorized", 401)
     }
 
-    const rbacResult = await rbacMiddleware(authResult.user, "canManageCRM")
-    if (!rbacResult.hasPermission) {
+    // Check if user has CRM permissions
+    if (!['admin', 'manager'].includes(authResult.user.role)) {
       return errorResponse("Forbidden", 403)
     }
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const pdfBuffer = await PDFService.generateQuotePDF(quote, company)
 
     // Return PDF as downloadable file
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="Quote-${quote.quoteNumber}.pdf"`,
