@@ -62,8 +62,14 @@ export async function GET(
           break
       }
 
+      // Convert Node.js Buffer to ArrayBuffer for NextResponse compatibility
+      const arrayBuffer = fileBuffer.buffer.slice(
+        fileBuffer.byteOffset,
+        fileBuffer.byteOffset + fileBuffer.byteLength
+      )
+
       // Return file with appropriate headers
-      return new NextResponse(fileBuffer, {
+      return new NextResponse(arrayBuffer, {
         status: 200,
         headers: {
           'Content-Type': contentType,
