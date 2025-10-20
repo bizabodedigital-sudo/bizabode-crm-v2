@@ -1,0 +1,315 @@
+{
+  "items": [
+    {
+      "sku": "28OZ-BB-CONT",
+      "name": "28OZ B/BASE CONTAINER",
+      "description": "28OZ MICROWAVABLE BLACKBASE CONTAINER (8X25) FAKPAK",
+      "category": "Containers",
+      "quantity": -1,
+      "reorderLevel": 50,
+      "unitPrice": 9427.18,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "SC-003",
+      "name": "SOUP CUP PAPER 24OZ",
+      "description": "SOUP CUP PAPER 24OZ [20*25] QUALITY",
+      "category": "Cups & Containers",
+      "quantity": 44,
+      "reorderLevel": 20,
+      "unitPrice": 9482.55,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "DHT-36-100",
+      "name": "HAND TOWEL SOPHIE",
+      "description": "HAND TOWEL SOPHIE 36*100SHTS",
+      "category": "Paper Products",
+      "quantity": 2,
+      "reorderLevel": 10,
+      "unitPrice": 9498.10,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "SC-LC-02",
+      "name": "SOUP CUP PAPER 16OZ",
+      "description": "SOUP CUP PAPER 160Z 500PCS (NO BRAND)",
+      "category": "Cups & Containers",
+      "quantity": 8,
+      "reorderLevel": 20,
+      "unitPrice": 9500.00,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "HTJ-1000FT",
+      "name": "JUMBO HAND TOWEL 1000FT",
+      "description": "JUMBO HAND TOWEL 1000FT 1PLY 6CT (ME10)",
+      "category": "Paper Products",
+      "quantity": 19,
+      "reorderLevel": 10,
+      "unitPrice": 9709.20,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "LB-2-LC-02",
+      "name": "LUNCH BOX KRAFT #2",
+      "description": "LUNCH BOX KRAFT #2 [4*50CT] 1400ML BIONATURE",
+      "category": "Lunch Boxes",
+      "quantity": 0,
+      "reorderLevel": 25,
+      "unitPrice": 9720.00,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "CP120Z-RIPPLE",
+      "name": "CUP PAPER RIPPLE 12OZ",
+      "description": "CUP PAPER RIPPLE 120Z 20*25 (NO BRAND)",
+      "category": "Cups & Containers",
+      "quantity": 4,
+      "reorderLevel": 20,
+      "unitPrice": 9730.00,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "5-CLAM-FAKPAK",
+      "name": "5\" CLAMSHELL FAKPAK",
+      "description": "CLAMSHELL CONTAINER 5\" SQUARE HINGED (20X25) FAKPAK",
+      "category": "Containers",
+      "quantity": 0,
+      "reorderLevel": 30,
+      "unitPrice": 9738.70,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "C89PSTI",
+      "name": "CONTAINER CLEAR MED SHALLOW",
+      "description": "CONTAINER CLEAR MED SHALLOW 250CT",
+      "category": "Containers",
+      "quantity": 0,
+      "reorderLevel": 50,
+      "unitPrice": 9802.00,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "TRI-CLAM-FAKPAK",
+      "name": "TRI CLAMSHELL FARPAK",
+      "description": "TRI SANDWICH CLAMSHELL CONTAINER (20X25) FAKPAK",
+      "category": "Containers",
+      "quantity": 20,
+      "reorderLevel": 30,
+      "unitPrice": 9854.64,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "34OZ-BB-CONT",
+      "name": "34OZ BB CONT. 8*25",
+      "description": "34OZ MICROWAVABLE BLACKBASE CONTAINER (8X25) FAKPAK",
+      "category": "Containers",
+      "quantity": 0,
+      "reorderLevel": 40,
+      "unitPrice": 9855.69,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "PP-LC-09-B",
+      "name": "PLATE PAPER 9\"",
+      "description": "PLATE PAPER 9\" (1000CT) PRO BRAND",
+      "category": "Plates",
+      "quantity": 0,
+      "reorderLevel": 50,
+      "unitPrice": 9880.83,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "LID-OB-1LB-LC",
+      "name": "LID OBLONG 1LB LC",
+      "description": "OBLONG PAN COVEBAY 1LB 1000CT LC",
+      "category": "Lids",
+      "quantity": 2,
+      "reorderLevel": 30,
+      "unitPrice": 9931.00,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "GLN-LC",
+      "name": "GLOVES NITRILE",
+      "description": "GLOVES POWDER FREE NITRILE BASTION 10*100 MED, LRG, XL LC",
+      "category": "Gloves & Safety",
+      "quantity": 6,
+      "reorderLevel": 15,
+      "unitPrice": 9941.54,
+      "costPrice": 7500.00
+    },
+    {
+      "sku": "CUPS-16OZ-LID",
+      "name": "CUPS 16OZ W/LID",
+      "description": "COVEBAY 16 OZ PAPER SOUP CONTAINER + PLASTIC LIDS COMBO (10*25)",
+      "category": "Cups & Containers",
+      "quantity": 1,
+      "reorderLevel": 25,
+      "unitPrice": 10019.70,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "CB-14",
+      "name": "CAKE BOX 14\"",
+      "description": "CAKE BOX 14.5''*11'' TOP & BOTTOM 100CT",
+      "category": "Cake Boxes",
+      "quantity": 0,
+      "reorderLevel": 20,
+      "unitPrice": 10036.58,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "FSP-CB130",
+      "name": "FULL SIZE PAN",
+      "description": "FULL SIZE PAN 50CT COVE BAY",
+      "category": "Pans",
+      "quantity": 1,
+      "reorderLevel": 15,
+      "unitPrice": 10065.60,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "CAN09",
+      "name": "CANDLES LOWBOY WHITE",
+      "description": "CANDLES LOWBOY WHITE 30CT QUALITY",
+      "category": "Candles",
+      "quantity": 2,
+      "reorderLevel": 10,
+      "unitPrice": 10118.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "18OZ-BB-CONT",
+      "name": "18OZ B/BASE CONTAINER",
+      "description": "18OZ MICROWAVABLE BLACKBASE CONTAINER (9X25) FAKPAK",
+      "category": "Containers",
+      "quantity": 16,
+      "reorderLevel": 30,
+      "unitPrice": 10123.50,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "PBG-LC-01",
+      "name": "PAPER BAG 1LB",
+      "description": "PAPER BAG 1LB (4000CT)",
+      "category": "Paper Bags",
+      "quantity": 13,
+      "reorderLevel": 50,
+      "unitPrice": 10125.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "CF03",
+      "name": "COFFEE FILTER",
+      "description": "COFFEE FILTER 21*9 6 GAL 250",
+      "category": "Coffee Supplies",
+      "quantity": 1,
+      "reorderLevel": 20,
+      "unitPrice": 10125.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "ND-LC-01",
+      "name": "NAPKIN DINNER 1/8-FOLD",
+      "description": "NAPKIN DINNER 1/8-FOLD [42*28CM] (20*150) CVBY",
+      "category": "Napkins",
+      "quantity": 0,
+      "reorderLevel": 40,
+      "unitPrice": 10125.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "AP2",
+      "name": "APRON DISPOSABLE",
+      "description": "APRON DISPOSABLE QUALITY 10*100 37*33*17CM",
+      "category": "Safety & Apparel",
+      "quantity": 246,
+      "reorderLevel": 100,
+      "unitPrice": 10175.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "GBB-003",
+      "name": "GARBAGE BIN 240LT",
+      "description": "GARBAGE BIN PLASTIC STEP ON W/ WHEELS 240LT",
+      "category": "Cleaning Supplies",
+      "quantity": 81,
+      "reorderLevel": 20,
+      "unitPrice": 10178.40,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "WP-1HP-220V",
+      "name": "WATER PUMP 1HP",
+      "description": "WATER PUMP 1HP 220VOLT (FEDERALLI)",
+      "category": "Equipment",
+      "quantity": 21,
+      "reorderLevel": 5,
+      "unitPrice": 10195.09,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "MB-36LT-SF",
+      "name": "MOP BUCKET 36LT",
+      "description": "MOP BUCKET 36LT (LC)",
+      "category": "Mops & Buckets",
+      "quantity": 0,
+      "reorderLevel": 10,
+      "unitPrice": 10260.00,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "SANI-BAG",
+      "name": "SANI BAG FISCHER",
+      "description": "SANI BAG FISCHER 4*2*9 1000/CS",
+      "category": "Bags",
+      "quantity": 0,
+      "reorderLevel": 25,
+      "unitPrice": 10270.80,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "CS-PC53",
+      "name": "CLAMSHELL PLASTIFAR 5\"",
+      "description": "CLAMSHELL PLASTIFAR 5\" 500CT",
+      "category": "Containers",
+      "quantity": -1,
+      "reorderLevel": 30,
+      "unitPrice": 10275.66,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "2.5OZ-CUP-1",
+      "name": "2.5OZ PORTION CUP",
+      "description": "2.5OZ PORTION CUP 25*100 DARNEL",
+      "category": "Cups & Containers",
+      "quantity": 1,
+      "reorderLevel": 30,
+      "unitPrice": 10335.90,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "CCPLD-LC-A",
+      "name": "LID PLASTIC COFFEE CUP 8OZ",
+      "description": "LID PLASTIC COFFE CUP 8OZ (1000) WHITE KARAT",
+      "category": "Lids",
+      "quantity": 2,
+      "reorderLevel": 40,
+      "unitPrice": 10353.92,
+      "costPrice": 8000.00
+    },
+    {
+      "sku": "GL11-LC",
+      "name": "GLOVES LATEX",
+      "description": "GLOVES LATEX POWDER FREE 10*100 LARGE/EXTRA LARGE/MEDIUM",
+      "category": "Gloves & Safety",
+      "quantity": 26,
+      "reorderLevel": 20,
+      "unitPrice": 10362.34,
+      "costPrice": 8000.00
+    }
+  ]
+}
+
