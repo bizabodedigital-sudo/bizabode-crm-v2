@@ -65,8 +65,11 @@ export async function GET(
           break
       }
 
+      // Convert Buffer to Uint8Array for Response compatibility
+      const uint8Array = new Uint8Array(fileBuffer)
+
       // Return file with appropriate headers using native Response
-      return new Response(fileBuffer, {
+      return new Response(uint8Array, {
         status: 200,
         headers: {
           'Content-Type': contentType,
