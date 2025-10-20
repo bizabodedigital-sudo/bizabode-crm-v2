@@ -436,7 +436,17 @@ export default function AttendancePage() {
       <AttendanceFormDialog
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        attendance={selectedAttendance}
+        attendance={
+          selectedAttendance
+            ? {
+                ...selectedAttendance,
+                employeeId:
+                  typeof selectedAttendance.employeeId === 'object'
+                    ? selectedAttendance.employeeId._id
+                    : selectedAttendance.employeeId,
+              }
+            : null
+        }
         onSuccess={fetchAttendance}
       />
 
