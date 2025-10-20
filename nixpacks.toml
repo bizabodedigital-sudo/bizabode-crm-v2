@@ -1,14 +1,17 @@
 [phases.setup]
-nixPkgs = ["nodejs_18", "pnpm"]
+nixPkgs = ["nodejs_20", "pnpm"]
+aptPkgs = ["curl", "wget"]
 
 [phases.install]
-cmds = ["pnpm i --frozen-lockfile"]
+cmds = ["pnpm install --frozen-lockfile"]
 
 [phases.build]
-cmds = ["pnpm run build"]
+# Copy build-time env so Next.js doesn't crash during static analysis
+cmds = ["cp .env.build .env.local", "pnpm run build"]
 
 [start]
 cmd = "pnpm run start"
 
 [variables]
 NODE_ENV = "production"
+PORT = "3000"

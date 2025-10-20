@@ -3,9 +3,10 @@ import jwt from "jsonwebtoken"
 import Employee from "@/lib/models/Employee"
 import connectDB from "@/lib/db"
 
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET || 'temporary-build-secret'
 
-if (!JWT_SECRET) {
+// Only throw error in production runtime, not during build
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
   throw new Error('JWT_SECRET environment variable is required')
 }
 
