@@ -312,7 +312,17 @@ export default function EmployeesPage() {
       <EmployeeFormDialog
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        employee={selectedEmployee}
+        employee={
+          selectedEmployee
+            ? {
+                ...selectedEmployee,
+                managerId:
+                  typeof selectedEmployee.managerId === 'object'
+                    ? selectedEmployee.managerId?._id || 'none'
+                    : selectedEmployee.managerId || 'none',
+              }
+            : null
+        }
         onSuccess={fetchEmployees}
       />
 
