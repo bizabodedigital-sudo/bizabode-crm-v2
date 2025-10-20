@@ -3,8 +3,8 @@ import { authenticateToken } from '@/lib/middleware/auth'
 import { connectDB } from '@/lib/db'
 import Quote from '@/lib/models/Quote'
 import Company from '@/lib/models/Company'
-import { emailSender } from '@/lib/utils/email-sender'
 import { PDFGenerator } from '@/lib/utils/pdf-generator'
+import { sendPdfEmail } from '@/lib/utils/email-attachments'
 import getStream from 'get-stream'
 
 export async function POST(
@@ -73,15 +73,13 @@ export async function POST(
       quoteData.validUntil
     )
 
-    const result = await emailSender.sendEmail({
-      to: recipientEmail || quote.customerEmail,
-      subject: `Quote #${quoteData.quoteNumber} from ${companyInfo.name}`,
-      html: emailHTML,
-      attachments: [{
-        filename: `quote-${quoteData.quoteNumber}.pdf`,
-        content: pdfBuffer
-      }]
-    })
+    const result = await sendPdfEmail(
+      recipientEmail || quote.customerEmail,
+      `Quote #${quoteData.quoteNumber} from ${companyInfo.name}`,
+      emailHTML,
+      pdfBuffer,
+      `quote-${quoteData.quoteNumber}.pdf`
+    )
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 })
