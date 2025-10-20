@@ -12,7 +12,7 @@ export function AdminPanel() {
   const { user, company } = useAuth()
   const userRole = (user?.role as any) || 'viewer'
   
-  const isAdmin = hasPermission(userRole, 'canManageCompany')
+  const isAdmin = hasPermission(userRole, 'canManageSettings')
   const canViewReports = hasPermission(userRole, 'canViewReports')
   const canManageLicense = hasPermission(userRole, 'canManageLicense')
   const canManageUsers = hasPermission(userRole, 'canManageUsers')

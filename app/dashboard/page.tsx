@@ -79,7 +79,7 @@ export default function DashboardPage() {
   const canViewInventory = hasPermission(userRole, 'canManageInventory')
   const canViewCRM = hasPermission(userRole, 'canManageCRM')
   const canViewReports = hasPermission(userRole, 'canViewReports')
-  const isAdmin = hasPermission(userRole, 'canManageCompany')
+  const isAdmin = hasPermission(userRole, 'canManageSettings')
 
   // Show loading state while authentication is in progress
   if (authLoading || !isAuthenticated) {
