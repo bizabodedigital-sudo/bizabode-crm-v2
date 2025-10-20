@@ -5,7 +5,7 @@ import { successResponse, errorResponse, unauthorizedResponse, notFoundResponse 
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
@@ -16,7 +16,8 @@ export async function GET(
       return unauthorizedResponse(authResult.error || "Authentication required")
     }
 
-    const supplierId = params.id
+    // Await the params
+    const { id: supplierId } = await params
 
     // In a real implementation, find supplier by ID
     // const supplier = await Supplier.findOne({ 
@@ -39,7 +40,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
@@ -50,7 +51,8 @@ export async function PUT(
       return unauthorizedResponse(authResult.error || "Authentication required")
     }
 
-    const supplierId = params.id
+    // Await the params
+    const { id: supplierId } = await params
     const body = await request.json()
 
     // In a real implementation, update supplier
@@ -74,7 +76,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
@@ -85,7 +87,8 @@ export async function DELETE(
       return unauthorizedResponse(authResult.error || "Authentication required")
     }
 
-    const supplierId = params.id
+    // Await the params
+    const { id: supplierId } = await params
 
     // In a real implementation, delete supplier
     // const supplier = await Supplier.findOneAndDelete({
