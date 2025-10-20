@@ -5,6 +5,7 @@ import Quote from '@/lib/models/Quote'
 import Company from '@/lib/models/Company'
 import { PDFGenerator } from '@/lib/utils/pdf-generator'
 import { sendPdfEmail } from '@/lib/utils/email-attachments'
+import { emailSender } from '@/lib/utils/email-sender'
 import getStream from 'get-stream'
 
 export async function POST(
