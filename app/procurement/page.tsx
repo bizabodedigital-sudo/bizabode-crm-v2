@@ -360,7 +360,6 @@ export default function ProcurementPage() {
       <PurchaseOrderFormDialog
         open={isFormDialogOpen}
         onOpenChange={handleFormCancel}
-        purchaseOrder={editingOrder}
         onSuccess={handleFormSuccess}
       />
     </div>

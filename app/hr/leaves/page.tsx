@@ -407,7 +407,17 @@ export default function LeavesPage() {
       <LeaveFormDialog
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        leave={selectedLeave}
+        leave={
+          selectedLeave
+            ? {
+                ...selectedLeave,
+                employeeId:
+                  typeof selectedLeave.employeeId === 'object'
+                    ? selectedLeave.employeeId._id
+                    : selectedLeave.employeeId,
+              }
+            : null
+        }
         onSuccess={fetchLeaves}
       />
 

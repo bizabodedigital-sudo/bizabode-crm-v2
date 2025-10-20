@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { getAuthHeaders } from "@/lib/utils/auth-headers"
 
 interface Attendance {
   _id: string
@@ -42,7 +43,7 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
     checkOut: "",
     breakStart: "",
     breakEnd: "",
-    status: "present" as const,
+    status: "present" as 'present' | 'absent' | 'late' | 'half-day' | 'sick' | 'vacation' | 'holiday',
     notes: ""
   })
 
@@ -66,15 +67,6 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
     }
   }, [open, attendance])
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("bizabode_token")
-    return token
-      ? {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      : { 'Content-Type': 'application/json' }
-  }
 
   const fetchEmployees = async () => {
     try {

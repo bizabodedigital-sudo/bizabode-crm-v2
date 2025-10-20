@@ -233,7 +233,7 @@ export function AfterSalesContent() {
                         <p className="font-medium">{feedback.customer}</p>
                         <p className="text-sm text-muted-foreground">{feedback.email}</p>
                       </div>
-                      <Badge variant="secondary" className={statusColors[feedback.status]}>
+                      <Badge variant="secondary" className={statusColors[feedback.status as keyof typeof statusColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
                         {feedback.status}
                       </Badge>
                     </div>
@@ -348,12 +348,12 @@ export function AfterSalesContent() {
                       </TableCell>
                       <TableCell>{ticket.subject}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={priorityColors[ticket.priority]}>
+                        <Badge variant="secondary" className={priorityColors[ticket.priority as keyof typeof priorityColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
                           {ticket.priority}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={statusColors[ticket.status]}>
+                        <Badge variant="secondary" className={statusColors[ticket.status as keyof typeof statusColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
                           {ticket.status}
                         </Badge>
                       </TableCell>

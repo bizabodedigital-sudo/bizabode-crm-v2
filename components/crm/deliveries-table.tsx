@@ -118,7 +118,7 @@ export function DeliveriesTable() {
                           <Check className="h-4 w-4" />
                         </Button>
                       )}
-                      {delivery.status !== "delivered" && delivery.status !== "cancelled" && (
+                      {(delivery.status === "scheduled" || delivery.status === "in-transit") && (
                         <Button variant="ghost" size="icon" title="View QR Code">
                           <QrCode className="h-4 w-4" />
                         </Button>

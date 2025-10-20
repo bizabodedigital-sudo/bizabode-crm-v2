@@ -18,7 +18,7 @@ export function NotificationsPanel() {
   const lowStockItems = items.filter(item => item.quantity <= item.reorderLevel && item.quantity > 0)
   const outOfStockItems = items.filter(item => item.quantity === 0)
   const overdueInvoices = invoices.filter(inv => 
-    inv.status === "pending" && 
+    inv.status === "sent" && 
     new Date(inv.dueDate) < new Date()
   )
   

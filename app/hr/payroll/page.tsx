@@ -470,7 +470,18 @@ export default function PayrollPage() {
       <PayrollFormDialog
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        payroll={selectedPayroll}
+        payroll={
+          selectedPayroll
+            ? {
+                ...selectedPayroll,
+                employeeId:
+                  typeof selectedPayroll.employeeId === 'object'
+                    ? selectedPayroll.employeeId._id
+                    : selectedPayroll.employeeId,
+                status: selectedPayroll.status || 'draft',
+              }
+            : null
+        }
         onSuccess={fetchPayrolls}
       />
 

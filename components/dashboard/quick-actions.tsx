@@ -13,7 +13,7 @@ export function QuickActions() {
   
   const canManageInventory = hasPermission(userRole, 'canManageInventory')
   const canManageCRM = hasPermission(userRole, 'canManageCRM')
-  const canManagePurchaseOrders = hasPermission(userRole, 'canManagePurchaseOrders')
+  const canManagePurchaseOrders = hasPermission(userRole, 'canManageProcurement')
 
   const actions = [
     {

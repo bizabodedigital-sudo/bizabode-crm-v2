@@ -258,7 +258,21 @@ export default function PurchaseOrdersPage() {
       <PurchaseOrderDetail
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
-        purchaseOrder={selectedPO}
+        purchaseOrder={
+          selectedPO
+            ? {
+                ...selectedPO,
+                createdBy: (selectedPO as any).createdBy || {
+                  name: 'System',
+                  email: 'system@bizabode.com'
+                },
+                supplierId: {
+                  ...selectedPO.supplierId,
+                  phone: (selectedPO.supplierId as any).phone || 'N/A'
+                }
+              }
+            : null
+        }
         onReceive={handleReceive}
       />
     </div>

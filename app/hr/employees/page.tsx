@@ -339,7 +339,7 @@ export default function EmployeesPage() {
                       position: 'Manager'
                     }
                   : undefined,
-                createdBy: selectedEmployee.createdBy || {
+                createdBy: (selectedEmployee as any).createdBy || {
                   name: 'System',
                   email: 'system@bizabode.com'
                 },

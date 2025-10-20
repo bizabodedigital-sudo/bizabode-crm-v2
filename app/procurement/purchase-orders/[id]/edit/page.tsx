@@ -73,7 +73,6 @@ export default function EditPurchaseOrderPage() {
           handleCancel()
         }
       }}
-      purchaseOrder={purchaseOrder}
       onSuccess={handleSuccess}
     />
   )
