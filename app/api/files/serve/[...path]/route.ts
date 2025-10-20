@@ -4,6 +4,9 @@ import { join } from 'path'
 import { authenticateToken } from '@/lib/middleware/auth'
 import { connectDB } from '@/lib/db'
 
+// Ensure this runs in Node.js runtime for file operations
+export const runtime = 'nodejs'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -62,14 +65,8 @@ export async function GET(
           break
       }
 
-      // Convert Node.js Buffer to ArrayBuffer for NextResponse compatibility
-      const arrayBuffer = fileBuffer.buffer.slice(
-        fileBuffer.byteOffset,
-        fileBuffer.byteOffset + fileBuffer.byteLength
-      )
-
-      // Return file with appropriate headers
-      return new NextResponse(arrayBuffer, {
+      // Return file with appropriate headers using native Response
+      return new Response(fileBuffer, {
         status: 200,
         headers: {
           'Content-Type': contentType,
