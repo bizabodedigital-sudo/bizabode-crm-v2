@@ -6,7 +6,7 @@ import connectDB from "@/lib/db"
 const JWT_SECRET = process.env.JWT_SECRET || 'temporary-build-secret'
 
 // Only throw error in production runtime, not during build
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production' && typeof window === 'undefined' && !process.env.NEXT_PHASE) {
   throw new Error('JWT_SECRET environment variable is required')
 }
 
