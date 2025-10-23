@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Edit, Trash2, Plus, Search, Loader2, Download } from "lucide-react"
+import { Edit, Trash2, Plus, Search, Loader2, Download, ShoppingCart, History } from "lucide-react"
 import type { Item } from "@/lib/types"
 import { useInventoryStore } from "@/lib/inventory-store"
 import { ItemFormDialog } from "./item-form-dialog"
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog"
+import { MovementLogsDialog } from "./movement-logs-dialog"
+import { BulkImportDialog } from "./bulk-import-dialog"
+import { PurchaseOrderDialog } from "./purchase-order-dialog"
 import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
@@ -32,6 +35,10 @@ export function ItemTable() {
   const [adjustingItem, setAdjustingItem] = useState<Item | null>(null)
   const [deletingItem, setDeletingItem] = useState<Item | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [movementLogsItem, setMovementLogsItem] = useState<Item | null>(null)
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false)
+  const [isPurchaseOrderOpen, setIsPurchaseOrderOpen] = useState(false)
   const { toast } = useToast()
 
   // Fetch items from API on mount
@@ -65,12 +72,13 @@ export function ItemTable() {
 
   const handleExportCSV = async () => {
     try {
+      setIsExporting(true)
       const token = localStorage.getItem('bizabode_token')
       if (!token) {
         throw new Error('No authentication token found. Please log in again.')
       }
 
-      const response = await fetch('/api/items/export-csv', {
+      const response = await fetch('/api/inventory/items/export-csv', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -87,34 +95,37 @@ export function ItemTable() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `inventory-stock-check-${new Date().toISOString().split('T')[0]}.csv`
+      a.download = `inventory-${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       
       toast({
-        title: "Success",
-        description: "Inventory data exported successfully",
+        title: "Export ready!",
+        description: "CSV file downloaded successfully",
       })
     } catch (error) {
       console.error('Export failed:', error)
       toast({
-        title: "Error",
+        title: "Failed to export",
         description: `Failed to export inventory data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
+    } finally {
+      setIsExporting(false)
     }
   }
 
   const handleExportPDF = async () => {
     try {
+      setIsExporting(true)
       const token = localStorage.getItem('bizabode_token')
       if (!token) {
         throw new Error('No authentication token found. Please log in again.')
       }
 
-      const response = await fetch('/api/items/export-csv?format=pdf', {
+      const response = await fetch('/api/inventory/items/export-csv?format=pdf', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -131,23 +142,25 @@ export function ItemTable() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `inventory-stock-check-${new Date().toISOString().split('T')[0]}.txt`
+      a.download = `inventory-report-${new Date().toISOString().split('T')[0]}.html`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       
       toast({
-        title: "Success",
-        description: "Inventory report generated successfully",
+        title: "Export ready!",
+        description: "PDF report downloaded successfully",
       })
     } catch (error) {
       console.error('Export failed:', error)
       toast({
-        title: "Error",
-        description: `Failed to generate inventory report: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Failed to export",
+        description: `Failed to export inventory data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -176,13 +189,29 @@ export function ItemTable() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleExportCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
+          <Button onClick={handleExportCSV} variant="outline" disabled={isExporting}>
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Export CSV
           </Button>
-          <Button onClick={handleExportPDF} variant="outline">
+          <Button onClick={handleExportPDF} variant="outline" disabled={isExporting}>
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            Export PDF
+          </Button>
+          <Button onClick={() => setIsBulkImportOpen(true)} variant="outline">
             <Download className="h-4 w-4 mr-2" />
-            Export TXT
+            Import CSV
+          </Button>
+          <Button onClick={() => setIsPurchaseOrderOpen(true)} variant="outline">
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Reorder
           </Button>
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -248,6 +277,9 @@ export function ItemTable() {
                         <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}>
                           <Edit className="h-4 w-4" />
                         </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setMovementLogsItem(item)}>
+                          <History className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeletingItem(item)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -296,6 +328,31 @@ export function ItemTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <MovementLogsDialog
+        open={!!movementLogsItem}
+        onOpenChange={(open) => !open && setMovementLogsItem(null)}
+        itemId={(movementLogsItem as any)?._id || movementLogsItem?.id || ''}
+        itemName={movementLogsItem?.name || ''}
+      />
+
+      <BulkImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+        onSuccess={() => {
+          fetchItems()
+          setIsBulkImportOpen(false)
+        }}
+      />
+
+      <PurchaseOrderDialog
+        open={isPurchaseOrderOpen}
+        onOpenChange={setIsPurchaseOrderOpen}
+        onSuccess={() => {
+          fetchItems()
+          setIsPurchaseOrderOpen(false)
+        }}
+      />
     </div>
   )
 }

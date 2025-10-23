@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ interface Item {
   sku: string
   name: string
   costPrice: number
+  unitPrice: number
 }
 
 interface PurchaseOrderItem {
@@ -39,9 +40,10 @@ interface PurchaseOrderFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
+  initialData?: any
 }
 
-export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: PurchaseOrderFormDialogProps) {
+export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initialData }: PurchaseOrderFormDialogProps) {
   const { company } = useAuth()
   const { toast } = useToast()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -50,20 +52,57 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
   const [poItems, setPoItems] = useState<PurchaseOrderItem[]>([])
   const [notes, setNotes] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const hasProcessedInitialData = useRef(false)
 
   useEffect(() => {
     if (open) {
       fetchSuppliers()
       fetchItems()
+      
+      // Handle initial data from inventory system (only once)
+      if (initialData && initialData.source === 'inventory-low-stock' && !hasProcessedInitialData.current) {
+        console.log('Processing initial data:', initialData)
+        if (initialData.items && initialData.items.length > 0) {
+          const mappedItems = initialData.items.map((item: any) => ({
+            itemId: item.itemId,
+            sku: item.sku,
+            name: item.name,
+            quantity: item.quantity,
+            unitCost: item.unitCost || 0, // Use provided unit cost or default to 0
+            totalCost: item.quantity * (item.unitCost || 0)
+          }))
+          console.log('Mapped items:', mappedItems)
+          setPoItems(mappedItems)
+          setNotes(initialData.notes || '')
+        } else {
+          console.log('No items in initial data, adding default item')
+          setPoItems([{
+            itemId: '',
+            sku: '',
+            name: '',
+            quantity: 1,
+            unitCost: 0,
+            totalCost: 0
+          }])
+        }
+        hasProcessedInitialData.current = true
+      }
+    }
+  }, [open, initialData])
+
+  // Reset the ref when dialog closes
+  useEffect(() => {
+    if (!open) {
+      hasProcessedInitialData.current = false
     }
   }, [open])
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('/api/suppliers')
+      const response = await fetch(`/api/procurement/suppliers?companyId=${company?.id}`)
       const data = await response.json()
       if (data.success) {
-        setSuppliers(data.data)
+        setSuppliers(data.data.suppliers || [])
       }
     } catch (error) {
       console.error('Failed to fetch suppliers:', error)
@@ -72,10 +111,10 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
 
   const fetchItems = async () => {
     try {
-      const response = await fetch('/api/items')
+      const response = await fetch(`/api/inventory/items?companyId=${company?.id}`)
       const data = await response.json()
       if (data.success) {
-        setItems(data.data)
+        setItems(data.data.items || [])
       }
     } catch (error) {
       console.error('Failed to fetch items:', error)
@@ -153,13 +192,20 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
     try {
       setIsLoading(true)
       
-      const response = await fetch('/api/purchase-orders', {
+      const response = await fetch('/api/procurement/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           supplierId: selectedSupplier,
-          items: poItems,
-          notes
+          items: poItems.map(item => ({
+            itemId: item.itemId,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.unitCost
+          })),
+          notes,
+          companyId: localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e',
+          createdBy: localStorage.getItem('userId') || '68f5bc2cf855b93078938f4e'
         })
       })
       
@@ -200,7 +246,7 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] max-h-[95vh] min-w-[800px] min-h-[400px] w-fit h-fit overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Purchase Order</DialogTitle>
           <DialogDescription>
@@ -209,11 +255,11 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div className="space-y-2">
-              <Label htmlFor="supplier">Supplier *</Label>
+              <Label htmlFor="supplier" className="text-lg font-semibold">Supplier *</Label>
               <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,17 +272,17 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Total Amount</Label>
-              <div className="text-2xl font-bold text-primary">
+              <Label className="text-lg font-semibold">Total Amount</Label>
+              <div className="text-4xl font-bold text-primary">
                 ${calculateTotal().toFixed(2)}
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Items *</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
+            <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <Label className="text-lg font-semibold">Items *</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addItem} className="h-10 px-4">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
@@ -247,29 +293,36 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
                 <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No items added yet</p>
                 <p className="text-sm">Click "Add Item" to get started</p>
+                {initialData && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Initial data received: {JSON.stringify(initialData, null, 2)}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="border rounded-lg">
+              <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Unit Cost</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="w-[300px]">Item</TableHead>
+                      <TableHead className="w-[120px]">SKU</TableHead>
+                      <TableHead className="w-[100px]">Quantity</TableHead>
+                      <TableHead className="w-[120px]">Unit Cost</TableHead>
+                      <TableHead className="w-[120px]">Total</TableHead>
+                      <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {poItems.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>
+                        <TableCell className="p-3">
                           <Select 
                             value={item.itemId} 
                             onValueChange={(value) => updateItem(index, 'itemId', value)}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full h-10 text-sm">
                               <SelectValue placeholder="Select item" />
                             </SelectTrigger>
                             <SelectContent>
@@ -281,37 +334,38 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="p-3 font-mono text-sm">
                           {item.sku}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="p-3">
                           <Input
                             type="number"
                             min="1"
                             value={item.quantity}
                             onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                            className="w-20"
+                            className="w-full h-10 text-sm"
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="p-3">
                           <Input
                             type="number"
                             min="0"
                             step="0.01"
                             value={item.unitCost}
                             onChange={(e) => updateItem(index, 'unitCost', parseFloat(e.target.value) || 0)}
-                            className="w-24"
+                            className="w-full h-10 text-sm"
                           />
                         </TableCell>
-                        <TableCell className="font-mono">
+                        <TableCell className="p-3 font-mono text-lg font-semibold">
                           ${item.totalCost.toFixed(2)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="p-3">
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => removeItem(index)}
+                            className="w-full h-10"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -324,22 +378,23 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess }: Purch
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+          <div className="space-y-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <Label htmlFor="notes" className="text-base font-semibold">Notes</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Additional notes for this purchase order..."
+              className="text-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-end gap-4 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="px-6 h-10">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || !selectedSupplier || poItems.length === 0}>
+            <Button type="submit" disabled={isLoading || !selectedSupplier || poItems.length === 0} className="px-6 h-10">
               {isLoading ? "Creating..." : "Create Purchase Order"}
             </Button>
           </div>

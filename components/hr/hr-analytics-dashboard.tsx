@@ -336,7 +336,7 @@ export function HRAnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${analytics.payroll.totalGrossPay.toLocaleString()}
+                ${(analytics.payroll.totalGrossPay || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Before deductions
@@ -351,7 +351,7 @@ export function HRAnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${analytics.payroll.totalDeductions.toLocaleString()}
+                ${(analytics.payroll.totalDeductions || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Taxes & benefits
@@ -366,7 +366,7 @@ export function HRAnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                ${analytics.payroll.totalNetPay.toLocaleString()}
+                ${(analytics.payroll.totalNetPay || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 After deductions
@@ -381,7 +381,7 @@ export function HRAnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${analytics.payroll.averageSalary.toLocaleString()}
+                ${(analytics.payroll.averageSalary || 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Per employee

@@ -397,8 +397,8 @@ export async function generateQuotePDF(quote: any, company: any): Promise<Buffer
 export async function generatePayslipPDF(payroll: any, company: any): Promise<Buffer> {
   const doc = new PDFDocument({ 
     size: 'A4', 
-    margin: 50,
-    font: 'Helvetica' // Use built-in font by default
+    margin: 50
+    // Remove font specification to use default font
   })
 
   const buffers: Buffer[] = []

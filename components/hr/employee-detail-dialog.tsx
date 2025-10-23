@@ -194,7 +194,7 @@ export function EmployeeDetailDialog({ open, onOpenChange, employee }: EmployeeD
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    ${employee.salary.toLocaleString()}/year
+                    ${(employee.salary || 0).toLocaleString()}/year
                     {employee.hourlyRate && ` ($${employee.hourlyRate}/hour)`}
                   </span>
                 </div>

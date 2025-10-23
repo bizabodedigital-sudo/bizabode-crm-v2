@@ -48,9 +48,9 @@ export function InvoicesTable() {
 
   const filteredInvoices = invoices.filter(
     (invoice) =>
-      invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()),
+      (invoice.number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (invoice.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (invoice.customerEmail || '').toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const handleDelete = async () => {
@@ -60,7 +60,7 @@ export function InvoicesTable() {
         setDeletingInvoice(null)
         toast({
           title: "Invoice deleted",
-          description: `Invoice ${deletingInvoice.invoiceNumber} has been deleted.`,
+          description: `Invoice ${deletingInvoice.number || 'Unknown'} has been deleted.`,
         })
       } catch (error) {
         toast({
@@ -81,7 +81,7 @@ export function InvoicesTable() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `invoice-${invoice.invoiceNumber}.pdf`
+      a.download = `invoice-${invoice.number || 'unknown'}.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -167,11 +167,11 @@ export function InvoicesTable() {
               ) : (
                 filteredInvoices.map((invoice) => (
                   <TableRow key={(invoice as any)._id || invoice.id}>
-                  <TableCell className="font-mono font-medium">{invoice.invoiceNumber}</TableCell>
-                  <TableCell>{invoice.customerName}</TableCell>
-                  <TableCell className="text-right font-mono">${invoice.total.toFixed(2)}</TableCell>
-                  <TableCell className="text-right font-mono">${invoice.paidAmount.toFixed(2)}</TableCell>
-                  <TableCell>{format(new Date(invoice.dueDate), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="font-mono font-medium">{invoice.number || 'N/A'}</TableCell>
+                  <TableCell>{invoice.customerName || 'N/A'}</TableCell>
+                  <TableCell className="text-right font-mono">${(invoice.total || 0).toFixed(2)}</TableCell>
+                  <TableCell className="text-right font-mono">${(invoice.paidTotal || 0).toFixed(2)}</TableCell>
+                  <TableCell>{invoice.dueDate ? format(new Date(invoice.dueDate), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={statusColors[invoice.status]}>
                       {invoice.status}
@@ -231,7 +231,7 @@ export function InvoicesTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete invoice "{deletingInvoice?.invoiceNumber}"? This action cannot be undone.
+              Are you sure you want to delete invoice "{deletingInvoice?.number || 'Unknown'}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

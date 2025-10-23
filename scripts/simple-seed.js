@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:examplepassword@localhost:27017/bizabode-crm?authSource=admin';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:password@localhost:27018/bizabode-crm?authSource=admin';
 
 async function clearAndSeed() {
   try {

@@ -211,7 +211,7 @@ export function PayrollDetailDialog({ open, onOpenChange, payroll }: PayrollDeta
                     </div>
                     <div className="text-right">
                       <div className={`font-medium ${item.type === 'deduction' ? 'text-red-600' : 'text-green-600'}`}>
-                        {item.type === 'deduction' ? '-' : '+'}${item.amount.toLocaleString()}
+                        {item.type === 'deduction' ? '-' : '+'}${(item.amount || 0).toLocaleString()}
                       </div>
                     </div>
                   </div>
@@ -237,16 +237,16 @@ export function PayrollDetailDialog({ open, onOpenChange, payroll }: PayrollDeta
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Gross Pay:</span>
-                  <span className="font-medium">${payroll.grossPay.toLocaleString()}</span>
+                  <span className="font-medium">${(payroll.grossPay || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Deductions:</span>
-                  <span className="font-medium text-red-600">-${payroll.deductions.toLocaleString()}</span>
+                  <span className="font-medium text-red-600">-${(payroll.deductions || 0).toLocaleString()}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Net Pay:</span>
-                  <span className="text-green-600">${payroll.netPay.toLocaleString()}</span>
+                  <span className="text-green-600">${(payroll.netPay || payroll.grossPay || 0).toLocaleString()}</span>
                 </div>
               </div>
             </CardContent>

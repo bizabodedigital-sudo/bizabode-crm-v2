@@ -74,9 +74,11 @@ export default function PayrollPage() {
       setIsLoading(true)
       const { apiClient } = await import("@/lib/api-client")
       const data = await apiClient.getPayrolls()
-      setPayrolls(data)
+      // Handle the response format - it might be wrapped in data property
+      setPayrolls(data.payrolls || data || [])
     } catch (error) {
       console.error('Failed to fetch payrolls:', error)
+      setPayrolls([])
     } finally {
       setIsLoading(false)
     }
@@ -255,7 +257,7 @@ export default function PayrollPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalGrossPay.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${(stats.totalGrossPay || 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Before deductions
             </p>
@@ -268,7 +270,7 @@ export default function PayrollPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalDeductions.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${(stats.totalDeductions || 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Taxes & benefits
             </p>
@@ -281,7 +283,7 @@ export default function PayrollPage() {
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${stats.totalNetPay.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">${(stats.totalNetPay || 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               After deductions
             </p>
@@ -401,13 +403,13 @@ export default function PayrollPage() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono">
-                          ${payroll.grossPay.toLocaleString()}
+                          ${(payroll.grossPay || 0).toLocaleString()}
                         </TableCell>
                         <TableCell className="font-mono text-red-600">
-                          -${payroll.deductions.toLocaleString()}
+                          -${(payroll.deductions || 0).toLocaleString()}
                         </TableCell>
                         <TableCell className="font-mono font-semibold text-green-600">
-                          ${payroll.netPay.toLocaleString()}
+                          ${(payroll.netPay || payroll.grossPay || 0).toLocaleString()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

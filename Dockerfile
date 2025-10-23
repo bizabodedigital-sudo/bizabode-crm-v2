@@ -16,6 +16,11 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Security: Remove unnecessary packages and clean up
+RUN apk del libc6-compat && \
+    rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/*
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app

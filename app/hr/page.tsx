@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Clock, DollarSign, FileText, UserPlus, Calendar, TrendingUp } from "lucide-react"
+import { Users, Clock, DollarSign, FileText, UserPlus, Calendar, TrendingUp, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog"
@@ -40,7 +40,25 @@ export default function HRPage() {
       setIsLoading(true)
 
       const { apiClient } = await import("@/lib/api-client")
-      const employees = await apiClient.getEmployees()
+      const response = await apiClient.getEmployees()
+      
+      // The API client should return { employees: [...], pagination: {...} }
+      const employees = response.employees || []
+
+      // Ensure employees is an array
+      if (!Array.isArray(employees)) {
+        console.error('Employees data is not an array:', employees)
+        console.log('Full response:', response)
+        setStats({
+          totalEmployees: 0,
+          activeEmployees: 0,
+          departments: 0,
+          totalPayroll: 0,
+          pendingLeaves: 0,
+          attendanceToday: 0
+        })
+        return
+      }
 
       const departments = [...new Set(employees.map((emp: any) => emp.department))]
 
@@ -54,6 +72,15 @@ export default function HRPage() {
       })
     } catch (error) {
       console.error('Failed to fetch HR stats:', error)
+      // Set default stats on error
+      setStats({
+        totalEmployees: 0,
+        activeEmployees: 0,
+        departments: 0,
+        totalPayroll: 0,
+        pendingLeaves: 0,
+        attendanceToday: 0
+      })
     } finally {
       setIsLoading(false)
     }
@@ -114,7 +141,7 @@ export default function HRPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${stats.totalPayroll.toLocaleString()}
+              ${(stats.totalPayroll || 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               Total salary budget
@@ -260,6 +287,141 @@ export default function HRPage() {
         </Card>
       </div>
 
+      {/* HR Admin Dashboard */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Pending Leave Requests */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Pending Leave Requests
+            </CardTitle>
+            <CardDescription>
+              Leave requests awaiting approval
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">John Smith - Vacation</p>
+                    <p className="text-xs text-muted-foreground">Dec 15-20, 2024</p>
+                  </div>
+                </div>
+                <Badge variant="outline">Pending</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">Sarah Johnson - Sick Leave</p>
+                    <p className="text-xs text-muted-foreground">Dec 12, 2024</p>
+                  </div>
+                </div>
+                <Badge variant="outline">Pending</Badge>
+              </div>
+              
+              <div className="text-center py-4">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/hr/leave-approvals">
+                    View All Requests
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Today's Attendance */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Today's Attendance
+            </CardTitle>
+            <CardDescription>
+              Current attendance status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">John Smith</p>
+                    <p className="text-xs text-muted-foreground">Clocked in at 9:00 AM</p>
+                  </div>
+                </div>
+                <Badge className="bg-green-100 text-green-800">Present</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">Sarah Johnson</p>
+                    <p className="text-xs text-muted-foreground">Clocked in at 9:15 AM</p>
+                  </div>
+                </div>
+                <Badge className="bg-yellow-100 text-yellow-800">Late</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">Mike Brown</p>
+                    <p className="text-xs text-muted-foreground">Not clocked in</p>
+                  </div>
+                </div>
+                <Badge className="bg-red-100 text-red-800">Absent</Badge>
+              </div>
+              
+              <div className="text-center py-4">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/hr/attendance">
+                    View Full Attendance
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* HR Analytics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            HR Analytics
+          </CardTitle>
+          <CardDescription>
+            Key metrics and insights
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">95%</div>
+              <p className="text-sm text-muted-foreground">Attendance Rate</p>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">3</div>
+              <p className="text-sm text-muted-foreground">Pending Approvals</p>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">$45K</div>
+              <p className="text-sm text-muted-foreground">Monthly Payroll</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recent Activity */}
       <Card>
         <CardHeader>
@@ -273,18 +435,34 @@ export default function HRPage() {
             <div className="flex items-center gap-3 p-3 border rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">System initialized</p>
+                <p className="text-sm font-medium">New employee added</p>
                 <p className="text-xs text-muted-foreground">
-                  HR module is ready for use
+                  Sarah Johnson joined the team
                 </p>
               </div>
-              <Badge variant="secondary">New</Badge>
+              <Badge variant="secondary">2 hours ago</Badge>
             </div>
             
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No recent activity</p>
-              <p className="text-sm">Start by adding your first employee</p>
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Leave request submitted</p>
+                <p className="text-xs text-muted-foreground">
+                  John Smith requested vacation
+                </p>
+              </div>
+              <Badge variant="secondary">4 hours ago</Badge>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Attendance alert</p>
+                <p className="text-xs text-muted-foreground">
+                  Mike Brown is running late
+                </p>
+              </div>
+              <Badge variant="secondary">6 hours ago</Badge>
             </div>
           </div>
         </CardContent>

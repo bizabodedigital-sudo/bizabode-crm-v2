@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://ivan:I13shawna@vwcs0wsos8ccs8sc4wcg8kok:27017/bizabode-crm';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:password@localhost:27018/bizabode-crm?authSource=admin';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');

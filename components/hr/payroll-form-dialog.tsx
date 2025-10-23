@@ -435,15 +435,15 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-muted-foreground">Gross Pay</p>
-                  <p className="text-2xl font-bold">${totals.grossPay.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">${(totals.grossPay || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Deductions</p>
-                  <p className="text-2xl font-bold text-red-600">${totals.deductions.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-red-600">${(totals.deductions || 0).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Net Pay</p>
-                  <p className="text-2xl font-bold text-green-600">${totals.netPay.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">${(totals.netPay || totals.grossPay || 0).toLocaleString()}</p>
                 </div>
               </div>
             </CardContent>

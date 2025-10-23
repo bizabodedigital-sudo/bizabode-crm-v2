@@ -53,9 +53,11 @@ export default function EmployeesPage() {
       setIsLoading(true)
       const { apiClient } = await import("@/lib/api-client")
       const data = await apiClient.getEmployees()
-      setEmployees(data)
+      // The API client should return { employees: [...], pagination: {...} }
+      setEmployees(data.employees || [])
     } catch (error) {
       console.error('Failed to fetch employees:', error)
+      setEmployees([])
     } finally {
       setIsLoading(false)
     }
@@ -170,7 +172,7 @@ export default function EmployeesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${employees.reduce((sum, emp) => sum + emp.salary, 0).toLocaleString()}
+              ${(employees.reduce((sum, emp) => sum + (emp.salary || 0), 0)).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -270,7 +272,7 @@ export default function EmployeesPage() {
                           {getStatusBadge(employee.status)}
                         </TableCell>
                         <TableCell className="font-mono">
-                          ${employee.salary.toLocaleString()}
+                          ${(employee.salary || 0).toLocaleString()}
                         </TableCell>
                         <TableCell className="text-sm">
                           {new Date(employee.hireDate).toLocaleDateString()}

@@ -47,9 +47,9 @@ export function QuotesTable() {
 
   const filteredQuotes = quotes.filter(
     (quote) =>
-      quote.quoteNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      quote.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      quote.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()),
+      (quote.number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (quote.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (quote.customerEmail || '').toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const handleDelete = async () => {
@@ -59,7 +59,7 @@ export function QuotesTable() {
         setDeletingQuote(null)
         toast({
           title: "Quote deleted",
-          description: `Quote ${deletingQuote.quoteNumber} has been deleted.`,
+          description: `Quote ${deletingQuote.number || 'Unknown'} has been deleted.`,
         })
       } catch (error) {
         toast({
@@ -104,7 +104,7 @@ export function QuotesTable() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `quote-${quote.quoteNumber}.pdf`
+      a.download = `quote-${quote.number || 'unknown'}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -190,11 +190,11 @@ export function QuotesTable() {
               ) : (
               filteredQuotes.map((quote) => (
                 <TableRow key={(quote as any)._id || quote.id}>
-                  <TableCell className="font-mono font-medium">{quote.quoteNumber}</TableCell>
-                  <TableCell>{quote.customerName}</TableCell>
-                  <TableCell>{quote.customerEmail}</TableCell>
-                  <TableCell className="text-right font-mono">${quote.total.toFixed(2)}</TableCell>
-                  <TableCell>{format(new Date(quote.validUntil), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="font-mono font-medium">{quote.number || 'N/A'}</TableCell>
+                  <TableCell>{quote.customerName || 'N/A'}</TableCell>
+                  <TableCell>{quote.customerEmail || 'N/A'}</TableCell>
+                  <TableCell className="text-right font-mono">${(quote.total || 0).toFixed(2)}</TableCell>
+                  <TableCell>{quote.validUntil ? format(new Date(quote.validUntil), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={statusColors[quote.status]}>
                       {quote.status}
@@ -247,7 +247,7 @@ export function QuotesTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Quote</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete quote "{deletingQuote?.quoteNumber}"? This action cannot be undone.
+              Are you sure you want to delete quote "{deletingQuote?.number || 'Unknown'}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

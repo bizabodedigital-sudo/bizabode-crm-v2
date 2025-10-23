@@ -63,9 +63,11 @@ export default function AttendancePage() {
       setIsLoading(true)
       const { apiClient } = await import("@/lib/api-client")
       const data = await apiClient.getAttendance()
-      setAttendance(data)
+      // Handle the response format - it might be wrapped in data property
+      setAttendance(data.attendance || data || [])
     } catch (error) {
       console.error('Failed to fetch attendance:', error)
+      setAttendance([])
       toast({
         title: "Error",
         description: "Failed to fetch attendance records",

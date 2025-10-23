@@ -320,10 +320,25 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.employeeId || !formData.firstName || !formData.lastName || !formData.email || !formData.position || !formData.department) {
+    // Basic validation for required fields only
+    const requiredFields = {
+      employeeId: formData.employeeId,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      position: formData.position,
+      department: formData.department,
+      salary: formData.salary
+    }
+    
+    const missingFields = Object.entries(requiredFields)
+      .filter(([key, value]) => !value || (typeof value === 'string' && value.trim() === ''))
+      .map(([key]) => key)
+    
+    if (missingFields.length > 0) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: `Please fill in: ${missingFields.join(', ')}`,
         variant: "destructive",
       })
       return
@@ -341,6 +356,7 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
         data = await apiClient.createEmployee({
           ...formData,
           companyId: company?.id || "company-1",
+          createdBy: company?.id || "company-1", // Add createdBy field
         })
       }
       

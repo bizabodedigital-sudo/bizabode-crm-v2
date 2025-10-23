@@ -51,7 +51,7 @@ class ApiClient {
       const data = await response.json()
       
       // Handle different response structures
-      // For login/register: { success: true, data: { token, user, company } }
+      // For endpoints with success: true, data: { ... }
       if (data.success && data.data) {
         return data.data as T
       } 
@@ -103,14 +103,14 @@ class ApiClient {
 
   // Employee endpoints
   async getEmployees() {
-    const response = await fetch('/api/employees', {
+    const response = await fetch('/api/hr/employees', {
       headers: this.getAuthHeader(),
     })
     return this.handleResponse<any>(response)
   }
 
   async createEmployee(data: any) {
-    const response = await fetch('/api/employees', {
+    const response = await fetch('/api/hr/employees', {
       method: 'POST',
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -119,7 +119,7 @@ class ApiClient {
   }
 
   async updateEmployee(id: string, data: any) {
-    const response = await fetch(`/api/employees/${id}`, {
+    const response = await fetch(`/api/hr/employees/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -128,7 +128,7 @@ class ApiClient {
   }
 
   async deleteEmployee(id: string) {
-    const response = await fetch(`/api/employees/${id}`, {
+    const response = await fetch(`/api/hr/employees/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeader(),
     })
@@ -237,6 +237,38 @@ class ApiClient {
     return this.handleResponse<any>(response)
   }
 
+  // Leave Request endpoints
+  async getLeaveRequests(params?: { companyId?: string; status?: string; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params?.companyId) searchParams.append('companyId', params.companyId)
+    if (params?.status) searchParams.append('status', params.status)
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    
+    const url = `/api/hr/leave-requests${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    const response = await fetch(url, {
+      headers: this.getAuthHeader(),
+    })
+    return this.handleResponse<any>(response)
+  }
+
+  async createLeaveRequest(data: any) {
+    const response = await fetch('/api/hr/leave-requests', {
+      method: 'POST',
+      headers: this.getAuthHeader(),
+      body: JSON.stringify(data),
+    })
+    return this.handleResponse<any>(response)
+  }
+
+  async approveLeaveRequest(id: string, action: 'approve' | 'reject', data: any) {
+    const response = await fetch(`/api/hr/leave-requests/${id}/approve`, {
+      method: 'PUT',
+      headers: this.getAuthHeader(),
+      body: JSON.stringify({ action, ...data }),
+    })
+    return this.handleResponse<any>(response)
+  }
+
   // User management endpoints
   async getUsers() {
     const response = await fetch('/api/users', {
@@ -282,7 +314,7 @@ class ApiClient {
 
   // PDF and Email endpoints
   async getInvoicePDF(id: string) {
-    const response = await fetch(`/api/invoices/${id}/download-pdf`, {
+    const response = await fetch(`/api/crm/invoices/${id}/download-pdf`, {
       headers: this.getAuthHeader(),
     })
 
@@ -296,7 +328,7 @@ class ApiClient {
   }
 
   async emailInvoice(id: string, recipientEmail?: string) {
-    const response = await fetch(`/api/invoices/${id}/email`, {
+    const response = await fetch(`/api/crm/invoices/${id}/email`, {
       method: 'POST',
       headers: this.getAuthHeader(),
       body: JSON.stringify({ recipientEmail }),
@@ -305,7 +337,7 @@ class ApiClient {
   }
 
   async getQuotePDF(id: string) {
-    const response = await fetch(`/api/quotes/${id}/download-pdf`, {
+    const response = await fetch(`/api/crm/quotes/${id}/download-pdf`, {
       headers: this.getAuthHeader(),
     })
 
@@ -318,7 +350,7 @@ class ApiClient {
   }
 
   async emailQuote(id: string, recipientEmail?: string) {
-    const response = await fetch(`/api/quotes/${id}/email`, {
+    const response = await fetch(`/api/crm/quotes/${id}/email`, {
       method: 'POST',
       headers: this.getAuthHeader(),
       body: JSON.stringify({ recipientEmail }),
@@ -375,14 +407,14 @@ class ApiClient {
     if (params?.category) queryParams.set("category", params.category)
     if (params?.lowStock) queryParams.set("lowStock", "true")
 
-    const response = await fetch(`/api/items?${queryParams}`, {
+    const response = await fetch(`/api/inventory/items?${queryParams}`, {
       headers: this.getAuthHeader(),
     })
     return this.handleResponse<any>(response)
   }
 
   async createItem(data: any) {
-    const response = await fetch(`/api/items`, {
+    const response = await fetch(`/api/inventory/items`, {
       method: "POST",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -391,7 +423,7 @@ class ApiClient {
   }
 
   async updateItem(id: string, data: any) {
-    const response = await fetch(`/api/items/${id}`, {
+    const response = await fetch(`/api/inventory/items/${id}`, {
       method: "PUT",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -400,7 +432,7 @@ class ApiClient {
   }
 
   async deleteItem(id: string) {
-    const response = await fetch(`/api/items/${id}`, {
+    const response = await fetch(`/api/inventory/items/${id}`, {
       method: "DELETE",
       headers: this.getAuthHeader(),
     })
@@ -408,7 +440,7 @@ class ApiClient {
   }
 
   async adjustStock(id: string, adjustment: number, reason: string, type: string = "adjustment") {
-    const response = await fetch(`/api/items/${id}/adjust-stock`, {
+    const response = await fetch(`/api/inventory/items/${id}/adjust-stock`, {
       method: "POST",
       headers: this.getAuthHeader(),
       body: JSON.stringify({ adjustment, reason, type }),
@@ -417,7 +449,7 @@ class ApiClient {
   }
 
   async exportItemsCSV() {
-    const response = await fetch('/api/items/export-csv', {
+    const response = await fetch('/api/inventory/items/export-csv', {
       headers: this.getAuthHeader(),
     })
     
@@ -430,7 +462,7 @@ class ApiClient {
   }
 
   async exportItemsPDF() {
-    const response = await fetch('/api/items/export-csv?format=pdf', {
+    const response = await fetch('/api/inventory/items/export-csv?format=pdf', {
       headers: this.getAuthHeader(),
     })
     
@@ -537,14 +569,14 @@ class ApiClient {
     if (params?.limit) queryParams.set("limit", params.limit.toString())
     if (params?.status) queryParams.set("status", params.status)
 
-    const response = await fetch(`/api/quotes?${queryParams}`, {
+    const response = await fetch(`/api/crm/quotes?${queryParams}`, {
       headers: this.getAuthHeader(),
     })
     return this.handleResponse<any>(response)
   }
 
   async createQuote(data: any) {
-    const response = await fetch(`/api/quotes`, {
+    const response = await fetch(`/api/crm/quotes`, {
       method: "POST",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -553,7 +585,7 @@ class ApiClient {
   }
 
   async updateQuote(id: string, data: any) {
-    const response = await fetch(`/api/quotes/${id}`, {
+    const response = await fetch(`/api/crm/quotes/${id}`, {
       method: "PUT",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -562,7 +594,7 @@ class ApiClient {
   }
 
   async deleteQuote(id: string) {
-    const response = await fetch(`/api/quotes/${id}`, {
+    const response = await fetch(`/api/crm/quotes/${id}`, {
       method: "DELETE",
       headers: this.getAuthHeader(),
     })
@@ -570,7 +602,7 @@ class ApiClient {
   }
 
   async sendQuote(id: string) {
-    const response = await fetch(`/api/quotes/${id}/send`, {
+    const response = await fetch(`/api/crm/quotes/${id}/send`, {
       method: "POST",
       headers: this.getAuthHeader(),
     })
@@ -584,14 +616,14 @@ class ApiClient {
     if (params?.limit) queryParams.set("limit", params.limit.toString())
     if (params?.status) queryParams.set("status", params.status)
 
-    const response = await fetch(`/api/invoices?${queryParams}`, {
+    const response = await fetch(`/api/crm/invoices?${queryParams}`, {
       headers: this.getAuthHeader(),
     })
     return this.handleResponse<any>(response)
   }
 
   async createInvoice(data: any) {
-    const response = await fetch(`/api/invoices`, {
+    const response = await fetch(`/api/crm/invoices`, {
       method: "POST",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -600,7 +632,7 @@ class ApiClient {
   }
 
   async updateInvoice(id: string, data: any) {
-    const response = await fetch(`/api/invoices/${id}`, {
+    const response = await fetch(`/api/crm/invoices/${id}`, {
       method: "PUT",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),
@@ -609,7 +641,7 @@ class ApiClient {
   }
 
   async deleteInvoice(id: string) {
-    const response = await fetch(`/api/invoices/${id}`, {
+    const response = await fetch(`/api/crm/invoices/${id}`, {
       method: "DELETE",
       headers: this.getAuthHeader(),
     })
@@ -617,7 +649,7 @@ class ApiClient {
   }
 
   async markInvoicePaid(id: string, data: any) {
-    const response = await fetch(`/api/invoices/${id}/mark-paid`, {
+    const response = await fetch(`/api/crm/invoices/${id}/mark-paid`, {
       method: "POST",
       headers: this.getAuthHeader(),
       body: JSON.stringify(data),

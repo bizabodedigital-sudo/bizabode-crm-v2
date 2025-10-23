@@ -1,39 +1,38 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Search, Filter, FileText, Package, CheckCircle, Clock, XCircle } from "lucide-react"
+import { Plus, Search, Filter, FileText, Package, CheckCircle, Clock, XCircle, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { PurchaseOrderFormDialog } from "@/components/procurement/purchase-order-form-dialog"
+import PurchaseOrdersTable from "@/components/procurement/purchase-orders-table"
+import { useToast } from "@/hooks/use-toast"
 
 interface PurchaseOrder {
   _id: string
-  poNumber: string
+  number: string
   supplierId: {
     name: string
     email: string
   }
-  status: 'draft' | 'sent' | 'ordered' | 'received' | 'cancelled'
-  orderDate: string
-  expectedDeliveryDate?: string
-  totalAmount: number
-  currency: string
+  status: 'draft' | 'approved' | 'sent' | 'received' | 'completed' | 'cancelled'
+  createdAt: string
+  expectedDate?: string
+  total: number
   items: Array<{
-    itemName: string
-    sku: string
+    name: string
     quantity: number
     unitPrice: number
-    totalPrice: number
+    lineTotal: number
   }>
-  createdBy: {
-    name: string
-  }
+  createdBy: string
 }
 
 export default function ProcurementPage() {
@@ -43,17 +42,45 @@ export default function ProcurementPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null)
+  const [pendingPOData, setPendingPOData] = useState<any>(null)
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchPurchaseOrders()
+    checkForPendingPO()
   }, [])
+
+  const checkForPendingPO = () => {
+    const action = searchParams.get('action')
+    const source = searchParams.get('source')
+    
+    if (action === 'create-po' && source === 'inventory') {
+      const pendingData = localStorage.getItem('pending-purchase-order')
+      if (pendingData) {
+        try {
+          const poData = JSON.parse(pendingData)
+          console.log('Parsed pending PO data:', poData)
+          setPendingPOData(poData)
+          setIsFormDialogOpen(true)
+          toast({
+            title: "Purchase Order Ready",
+            description: `Creating PO for ${poData.items.length} items from inventory`,
+          })
+        } catch (error) {
+          console.error('Failed to parse pending PO data:', error)
+        }
+      }
+    }
+  }
 
   const fetchPurchaseOrders = async () => {
     try {
-      const response = await fetch('/api/purchase-orders')
+      const companyId = localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e'
+      const response = await fetch(`/api/procurement/purchase-orders?companyId=${companyId}`)
       const data = await response.json()
       if (data.success) {
-        setPurchaseOrders(data.data)
+        setPurchaseOrders(data.data.purchaseOrders || [])
       }
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error)
@@ -71,6 +98,9 @@ export default function ProcurementPage() {
     fetchPurchaseOrders()
     setIsFormDialogOpen(false)
     setEditingOrder(null)
+    setPendingPOData(null)
+    // Clear the pending PO data from localStorage
+    localStorage.removeItem('pending-purchase-order')
   }
 
   const handleFormCancel = () => {
@@ -81,9 +111,10 @@ export default function ProcurementPage() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       draft: { color: "bg-gray-100 text-gray-800", icon: FileText },
-      sent: { color: "bg-blue-100 text-blue-800", icon: Clock },
-      ordered: { color: "bg-yellow-100 text-yellow-800", icon: Package },
+      approved: { color: "bg-blue-100 text-blue-800", icon: CheckCircle },
+      sent: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
       received: { color: "bg-green-100 text-green-800", icon: CheckCircle },
+      completed: { color: "bg-green-100 text-green-800", icon: CheckCircle },
       cancelled: { color: "bg-red-100 text-red-800", icon: XCircle }
     }
     
@@ -99,8 +130,8 @@ export default function ProcurementPage() {
   }
 
   const filteredOrders = purchaseOrders.filter(order => {
-    const matchesSearch = order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.supplierId.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (order.number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (order.supplierId?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -182,7 +213,7 @@ export default function ProcurementPage() {
               <div className="flex justify-between">
                 <span className="text-sm">Pending:</span>
                 <span className="font-medium">
-                  {purchaseOrders.filter(po => ['draft', 'sent', 'ordered'].includes(po.status)).length}
+                  {purchaseOrders.filter(po => ['draft', 'approved', 'sent'].includes(po.status)).length}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -214,7 +245,7 @@ export default function ProcurementPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {purchaseOrders.filter(po => ['draft', 'sent', 'ordered'].includes(po.status)).length}
+              {purchaseOrders.filter(po => ['draft', 'approved', 'sent'].includes(po.status)).length}
             </div>
           </CardContent>
         </Card>
@@ -236,7 +267,7 @@ export default function ProcurementPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${purchaseOrders.reduce((sum, po) => sum + po.totalAmount, 0).toLocaleString()}
+              ${purchaseOrders.reduce((sum, po) => sum + po.total, 0).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -261,9 +292,10 @@ export default function ProcurementPage() {
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="ordered">Ordered</SelectItem>
               <SelectItem value="received">Received</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -281,78 +313,7 @@ export default function ProcurementPage() {
           <CardDescription>Manage your purchase orders and track deliveries</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>PO Number</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Order Date</TableHead>
-                <TableHead>Expected Delivery</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Created By</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order._id}>
-                  <TableCell className="font-medium">{order.poNumber}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{order.supplierId.name}</div>
-                      <div className="text-sm text-muted-foreground">{order.supplierId.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell>{format(new Date(order.orderDate), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>
-                    {order.expectedDeliveryDate 
-                      ? format(new Date(order.expectedDeliveryDate), 'MMM dd, yyyy')
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell>${order.totalAmount.toLocaleString()}</TableCell>
-                  <TableCell>{order.createdBy.name}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Link href={`/procurement/purchase-orders/${order._id}`}>
-                        <Button variant="outline" size="sm">View</Button>
-                      </Link>
-                      {order.status === 'draft' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditOrder(order)}
-                        >
-                          Edit
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-8">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No purchase orders found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Try adjusting your search or filter criteria"
-                  : "Get started by creating your first purchase order"
-                }
-              </p>
-              {!searchTerm && statusFilter === "all" && (
-                <Button onClick={() => setIsFormDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Purchase Order
-                </Button>
-              )}
-            </div>
-          )}
+          <PurchaseOrdersTable companyId={localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e'} />
         </CardContent>
       </Card>
 
@@ -361,6 +322,7 @@ export default function ProcurementPage() {
         open={isFormDialogOpen}
         onOpenChange={handleFormCancel}
         onSuccess={handleFormSuccess}
+        initialData={pendingPOData}
       />
     </div>
   )

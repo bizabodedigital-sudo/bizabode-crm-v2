@@ -60,17 +60,24 @@ export default function LeavesPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   useEffect(() => {
-    fetchLeaves()
-  }, [])
+    if (company?.id) {
+      fetchLeaves()
+    }
+  }, [company?.id])
 
   const fetchLeaves = async () => {
     try {
       setIsLoading(true)
       const { apiClient } = await import("@/lib/api-client")
-      const data = await apiClient.getLeaves()
-      setLeaves(data)
+      const data = await apiClient.getLeaveRequests({
+        companyId: company?.id || '68f5bc2cf855b93078938f4e',
+        limit: 1000
+      })
+      // Handle the response format - it might be wrapped in data property
+      setLeaves(data.leaveRequests || data || [])
     } catch (error) {
       console.error('Failed to fetch leaves:', error)
+      setLeaves([])
     } finally {
       setIsLoading(false)
     }
@@ -78,10 +85,10 @@ export default function LeavesPage() {
 
   const filteredLeaves = leaves.filter(leave => {
     const matchesSearch = 
-      leave.employeeId.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      leave.employeeId.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      leave.employeeId.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      leave.employeeId.department.toLowerCase().includes(searchQuery.toLowerCase())
+      (leave.employeeId?.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (leave.employeeId?.lastName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (leave.employeeId?.employeeId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (leave.employeeId?.department || '').toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesStatus = statusFilter === "all" || leave.status === statusFilter
     const matchesType = typeFilter === "all" || leave.leaveType === typeFilter
@@ -329,10 +336,10 @@ export default function LeavesPage() {
                             <User className="h-4 w-4 text-muted-foreground" />
                             <div>
                               <div className="font-medium">
-                                {leave.employeeId.firstName} {leave.employeeId.lastName}
+                                {leave.employeeId?.firstName || 'Unknown'} {leave.employeeId?.lastName || 'Employee'}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {leave.employeeId.employeeId} • {leave.employeeId.department}
+                                {leave.employeeId?.employeeId || 'N/A'} • {leave.employeeId?.department || 'N/A'}
                               </div>
                             </div>
                           </div>

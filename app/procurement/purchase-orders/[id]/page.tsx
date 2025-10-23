@@ -45,7 +45,7 @@ export default function PurchaseOrderDetailPage() {
 
   const fetchPurchaseOrder = async () => {
     try {
-      const response = await fetch(`/api/purchase-orders/${purchaseOrderId}`)
+      const response = await fetch(`/api/procurement/purchase-orders/${purchaseOrderId}`)
       const data = await response.json()
       if (data.success) {
         setPurchaseOrder(data.data)

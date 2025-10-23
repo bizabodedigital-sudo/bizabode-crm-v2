@@ -1,36 +1,68 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import { NextRequest, NextResponse } from 'next/server'
+import { connectDB } from '@/lib/db'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Check database connection
-    await connectDB();
+    const startTime = Date.now()
     
-    // Basic health check
-    const health = {
+    // Check database connection
+    await connectDB()
+    
+    // Check system resources
+    const memoryUsage = process.memoryUsage()
+    const uptime = process.uptime()
+    
+    // Check environment variables
+    const requiredEnvVars = [
+      'MONGODB_URI',
+      'JWT_SECRET',
+      'NEXTAUTH_SECRET',
+      'NEXTAUTH_URL'
+    ]
+    
+    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
+    
+    if (missingEnvVars.length > 0) {
+      return NextResponse.json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: `Missing environment variables: ${missingEnvVars.join(', ')}`,
+        uptime: uptime,
+        memory: {
+          used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+          total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+          external: Math.round(memoryUsage.external / 1024 / 1024)
+        }
+      }, { status: 500 })
+    }
+    
+    const responseTime = Date.now() - startTime
+    
+    return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV,
+      uptime: uptime,
+      responseTime: responseTime,
+      memory: {
+        used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+        total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+        external: Math.round(memoryUsage.external / 1024 / 1024)
+      },
+      database: 'connected',
       version: process.env.npm_package_version || '1.0.0',
-      services: {
-        database: 'connected',
-        api: 'running'
-      }
-    };
-
-    return NextResponse.json(health, { status: 200 });
+      environment: process.env.NODE_ENV || 'development'
+    })
   } catch (error) {
-    console.error('Health check failed:', error);
-    
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error',
-      services: {
-        database: 'disconnected',
-        api: 'running'
+      uptime: process.uptime(),
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        external: Math.round(process.memoryUsage().external / 1024 / 1024)
       }
-    }, { status: 503 });
+    }, { status: 500 })
   }
 }
