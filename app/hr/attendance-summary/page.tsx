@@ -71,7 +71,7 @@ export default function AttendanceSummaryPage() {
   const fetchAttendanceData = async () => {
     try {
       setIsLoading(true);
-      const companyId = localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e';
+      const companyId = company?.id || '';
       
       // Calculate date range
       let startDate, endDate;

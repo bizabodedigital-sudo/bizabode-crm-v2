@@ -16,6 +16,12 @@ import { MovementLogsDialog } from "./movement-logs-dialog"
 import { BulkImportDialog } from "./bulk-import-dialog"
 import { PurchaseOrderDialog } from "./purchase-order-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency } from "@/lib/utils/formatters"
+import { getStatusColor, getCategoryColor } from "@/lib/utils/status-colors"
+import SearchInput from "@/components/shared/SearchInput"
+import Loading from "@/components/shared/Loading"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function ItemTable() {
+  const { company } = useAuth()
   const { items, deleteItem, fetchItems, isLoading } = useInventoryStore()
   const [searchQuery, setSearchQuery] = useState("")
   const [showCriticalOnly, setShowCriticalOnly] = useState(false)
@@ -73,25 +80,15 @@ export function ItemTable() {
   const handleExportCSV = async () => {
     try {
       setIsExporting(true)
-      const token = localStorage.getItem('bizabode_token')
-      if (!token) {
-        throw new Error('No authentication token found. Please log in again.')
-      }
-
-      const response = await fetch('/api/inventory/items/export-csv', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const response = await api.get(endpoints.inventory.exportCsv, {
+        companyId: company?.id || ''
       })
       
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Export failed:', response.status, errorText)
-        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      if (!response.success) {
+        throw new Error(response.error || 'Export failed')
       }
       
-      const blob = await response.blob()
+      const blob = new Blob([response.data], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -120,29 +117,20 @@ export function ItemTable() {
   const handleExportPDF = async () => {
     try {
       setIsExporting(true)
-      const token = localStorage.getItem('bizabode_token')
-      if (!token) {
-        throw new Error('No authentication token found. Please log in again.')
-      }
-
-      const response = await fetch('/api/inventory/items/export-csv?format=pdf', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const response = await api.get(endpoints.inventory.exportCsv, {
+        companyId: company?.id || '',
+        format: 'pdf'
       })
       
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Export failed:', response.status, errorText)
-        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      if (!response.success) {
+        throw new Error(response.error || 'Export failed')
       }
       
-      const blob = await response.blob()
+      const blob = new Blob([response.data], { type: 'application/pdf' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `inventory-report-${new Date().toISOString().split('T')[0]}.html`
+      a.download = `inventory-report-${new Date().toISOString().split('T')[0]}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -168,15 +156,11 @@ export function ItemTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search items by name, SKU, or category..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          <SearchInput
+            placeholder="Search items by name, SKU, or category..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
           <div className="flex items-center space-x-2">
             <Switch
               id="critical-only"
@@ -221,9 +205,7 @@ export function ItemTable() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <Loading />
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -265,7 +247,7 @@ export function ItemTable() {
                     <TableCell>{item.category}</TableCell>
                     <TableCell className="text-right font-mono">{item.quantity}</TableCell>
                     <TableCell className="text-right font-mono">{item.reorderLevel}</TableCell>
-                    <TableCell className="text-right font-mono">${item.unitPrice.toFixed(2)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatCurrency(item.unitPrice, 'JMD')}</TableCell>
                     <TableCell>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </TableCell>

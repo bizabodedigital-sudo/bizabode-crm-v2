@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2, Package } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency } from "@/lib/utils/formatters"
 
 interface Supplier {
   _id: string
@@ -99,10 +101,11 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initial
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch(`/api/procurement/suppliers?companyId=${company?.id}`)
-      const data = await response.json()
-      if (data.success) {
-        setSuppliers(data.data.suppliers || [])
+      const response = await api.get(endpoints.procurement.suppliers, {
+        companyId: company?.id || ''
+      })
+      if (response.success) {
+        setSuppliers(response.data.suppliers || [])
       }
     } catch (error) {
       console.error('Failed to fetch suppliers:', error)
@@ -111,10 +114,11 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initial
 
   const fetchItems = async () => {
     try {
-      const response = await fetch(`/api/inventory/items?companyId=${company?.id}`)
-      const data = await response.json()
-      if (data.success) {
-        setItems(data.data.items || [])
+      const response = await api.get(endpoints.inventory.items, {
+        companyId: company?.id || ''
+      })
+      if (response.success) {
+        setItems(response.data.items || [])
       }
     } catch (error) {
       console.error('Failed to fetch items:', error)
@@ -192,26 +196,20 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initial
     try {
       setIsLoading(true)
       
-      const response = await fetch('/api/procurement/purchase-orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          supplierId: selectedSupplier,
-          items: poItems.map(item => ({
-            itemId: item.itemId,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.unitCost
-          })),
-          notes,
-          companyId: localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e',
-          createdBy: localStorage.getItem('userId') || '68f5bc2cf855b93078938f4e'
-        })
+      const response = await api.post(endpoints.procurement.purchaseOrders, {
+        supplierId: selectedSupplier,
+        items: poItems.map(item => ({
+          itemId: item.itemId,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitCost
+        })),
+        notes,
+        companyId: company?.id,
+        createdBy: company?.id
       })
       
-      const data = await response.json()
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: "Purchase order created successfully",
@@ -274,7 +272,7 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initial
             <div className="space-y-2">
               <Label className="text-lg font-semibold">Total Amount</Label>
               <div className="text-4xl font-bold text-primary">
-                ${calculateTotal().toFixed(2)}
+{formatCurrency(calculateTotal(), 'JMD')}
               </div>
             </div>
           </div>
@@ -357,7 +355,7 @@ export function PurchaseOrderFormDialog({ open, onOpenChange, onSuccess, initial
                           />
                         </TableCell>
                         <TableCell className="p-3 font-mono text-lg font-semibold">
-                          ${item.totalCost.toFixed(2)}
+{formatCurrency(item.totalCost, 'JMD')}
                         </TableCell>
                         <TableCell className="p-3">
                           <Button

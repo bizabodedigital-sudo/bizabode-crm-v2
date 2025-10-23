@@ -86,6 +86,8 @@ export function LeadsTable() {
                 <TableHead>Company</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Territory</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -94,7 +96,7 @@ export function LeadsTable() {
             <TableBody>
               {filteredLeads.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                     No leads found
                   </TableCell>
                 </TableRow>
@@ -105,6 +107,14 @@ export function LeadsTable() {
                   <TableCell>{lead.company}</TableCell>
                   <TableCell>{lead.email}</TableCell>
                   <TableCell>{lead.phone}</TableCell>
+                  <TableCell>
+                    {lead.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {lead.category}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>{lead.territory || '-'}</TableCell>
                   <TableCell>{lead.source}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={statusColors[lead.status]}>

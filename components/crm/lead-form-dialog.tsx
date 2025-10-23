@@ -33,6 +33,13 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
     source: "",
     status: "new" as Lead["status"],
     notes: "",
+    // Enhanced fields
+    category: "" as Lead["category"],
+    productInterest: [] as string[],
+    monthlyVolume: 0,
+    territory: "",
+    leadScore: 0,
+    customerType: "" as Lead["customerType"],
   })
 
   useEffect(() => {
@@ -45,6 +52,12 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
         source: lead.source,
         status: lead.status,
         notes: lead.notes,
+        category: lead.category || "",
+        productInterest: lead.productInterest || [],
+        monthlyVolume: lead.monthlyVolume || 0,
+        territory: lead.territory || "",
+        leadScore: lead.leadScore || 0,
+        customerType: lead.customerType || "",
       })
     } else {
       setFormData({
@@ -55,6 +68,12 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
         source: "",
         status: "new",
         notes: "",
+        category: "",
+        productInterest: [],
+        monthlyVolume: 0,
+        territory: "",
+        leadScore: 0,
+        customerType: "",
       })
     }
   }, [lead, open])
@@ -174,6 +193,80 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value as Lead["category"] })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Hotel">Hotel</SelectItem>
+                  <SelectItem value="Supermarket">Supermarket</SelectItem>
+                  <SelectItem value="Restaurant">Restaurant</SelectItem>
+                  <SelectItem value="Contractor">Contractor</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customerType">Customer Type</Label>
+              <Select
+                value={formData.customerType}
+                onValueChange={(value) => setFormData({ ...formData, customerType: value as Lead["customerType"] })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select customer type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Volume Buyer">Volume Buyer</SelectItem>
+                  <SelectItem value="Commercial">Commercial</SelectItem>
+                  <SelectItem value="Retail">Retail</SelectItem>
+                  <SelectItem value="Wholesale">Wholesale</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="territory">Territory</Label>
+              <Input
+                id="territory"
+                value={formData.territory}
+                onChange={(e) => setFormData({ ...formData, territory: e.target.value })}
+                placeholder="e.g., Kingston, Montego Bay"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthlyVolume">Monthly Volume (JMD)</Label>
+              <Input
+                id="monthlyVolume"
+                type="number"
+                value={formData.monthlyVolume}
+                onChange={(e) => setFormData({ ...formData, monthlyVolume: Number(e.target.value) })}
+                placeholder="Estimated monthly order value"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="productInterest">Product Interest</Label>
+            <Input
+              id="productInterest"
+              value={formData.productInterest.join(", ")}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                productInterest: e.target.value.split(",").map(item => item.trim()).filter(item => item)
+              })}
+              placeholder="e.g., Containers, Cups, Paper Products (comma separated)"
+            />
           </div>
 
           <div className="space-y-2">

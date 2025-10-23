@@ -12,6 +12,7 @@ import { NotificationsPanel } from "@/components/dashboard/notifications-panel"
 import { StockMovementChart } from "@/components/dashboard/stock-movement-chart"
 import { RevenueOverTimeChart } from "@/components/dashboard/revenue-over-time-chart"
 import { AdminPanel } from "@/components/dashboard/admin-panel"
+import { TasksWidget } from "@/components/crm/tasks-widget"
 import { DollarSign, TrendingUp, Package, Users, ShoppingCart, FileText, AlertTriangle } from "lucide-react"
 import { useInventoryStore } from "@/lib/inventory-store"
 import { useCRMStore } from "@/lib/crm-store"
@@ -177,6 +178,7 @@ export default function DashboardPage() {
         {/* Right Column */}
         <div className="space-y-6">
           <QuickActions />
+          {canViewCRM && <TasksWidget companyId={user?.companyId || ''} userId={user?.id} />}
           <NotificationsPanel />
           {isAdmin && <AdminPanel />}
         </div>

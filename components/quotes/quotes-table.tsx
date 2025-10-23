@@ -12,6 +12,12 @@ import { QuoteFormDialog } from "./quote-form-dialog"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
+import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency, formatDate } from "@/lib/utils/formatters"
+import { getStatusColor } from "@/lib/utils/status-colors"
+import SearchInput from "@/components/shared/SearchInput"
+import Loading from "@/components/shared/Loading"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,15 +29,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const statusColors = {
-  draft: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
-  sent: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  accepted: "bg-green-500/10 text-green-700 dark:text-green-400",
-  rejected: "bg-red-500/10 text-red-700 dark:text-red-400",
-  expired: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
-}
 
 export function QuotesTable() {
+  const { company } = useAuth()
   const { quotes, deleteQuote, convertQuoteToInvoice, fetchQuotes, isLoading } = useQuotesInvoicesStore()
   const router = useRouter()
   const { toast } = useToast()
@@ -90,17 +90,13 @@ export function QuotesTable() {
 
   const handleDownloadPDF = async (quote: Quote) => {
     try {
-      const response = await fetch(`/api/quotes/${(quote as any)._id || quote.id}/download-pdf`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('bizabode_token')}`
-        }
-      })
+      const response = await api.get(endpoints.quotes.downloadPdf((quote as any)._id || quote.id))
       
-      if (!response.ok) {
-        throw new Error('PDF download failed')
+      if (!response.success) {
+        throw new Error(response.error || 'PDF download failed')
       }
       
-      const blob = await response.blob()
+      const blob = new Blob([response.data], { type: 'application/pdf' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -147,15 +143,11 @@ export function QuotesTable() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search quotes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          placeholder="Search quotes..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Create Quote
@@ -163,9 +155,7 @@ export function QuotesTable() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <Loading />
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -193,10 +183,10 @@ export function QuotesTable() {
                   <TableCell className="font-mono font-medium">{quote.number || 'N/A'}</TableCell>
                   <TableCell>{quote.customerName || 'N/A'}</TableCell>
                   <TableCell>{quote.customerEmail || 'N/A'}</TableCell>
-                  <TableCell className="text-right font-mono">${(quote.total || 0).toFixed(2)}</TableCell>
+                  <TableCell className="text-right font-mono">{formatCurrency(quote.total || 0, 'JMD')}</TableCell>
                   <TableCell>{quote.validUntil ? format(new Date(quote.validUntil), 'MMM dd, yyyy') : 'N/A'}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColors[quote.status]}>
+                    <Badge variant="secondary" className={getStatusColor(quote.status)}>
                       {quote.status}
                     </Badge>
                   </TableCell>

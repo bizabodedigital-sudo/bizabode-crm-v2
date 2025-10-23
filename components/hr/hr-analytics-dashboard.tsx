@@ -20,6 +20,10 @@ import {
   RefreshCw
 } from "lucide-react"
 import { format } from "date-fns"
+import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency, formatDate } from "@/lib/utils/formatters"
+import Loading from "@/components/shared/Loading"
 
 interface HRAnalytics {
   overview: {
@@ -60,6 +64,7 @@ interface HRAnalytics {
 }
 
 export function HRAnalyticsDashboard() {
+  const { company } = useAuth()
   const [analytics, setAnalytics] = useState<HRAnalytics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [reportType, setReportType] = useState("overview")
@@ -67,8 +72,10 @@ export function HRAnalyticsDashboard() {
   const [department, setDepartment] = useState("all")
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [reportType, dateRange, department])
+    if (company?.id) {
+      fetchAnalytics()
+    }
+  }, [company?.id, reportType, dateRange, department])
 
   const fetchAnalytics = async () => {
     try {
@@ -88,11 +95,16 @@ export function HRAnalyticsDashboard() {
         params.append('department', department)
       }
 
-      const response = await fetch(`/api/hr/reports?${params}`)
-      const data = await response.json()
+      const response = await api.get(endpoints.hr.reports, {
+        companyId: company?.id || '',
+        type: reportType,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        ...(department !== "all" && { department })
+      })
       
-      if (data.success) {
-        setAnalytics(data.data)
+      if (response.success) {
+        setAnalytics(response.data)
       }
     } catch (error) {
       console.error('Failed to fetch HR analytics:', error)
@@ -126,14 +138,7 @@ export function HRAnalyticsDashboard() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading HR analytics...</p>
-        </div>
-      </div>
-    )
+    return <Loading />
   }
 
   if (!analytics) {

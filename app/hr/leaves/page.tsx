@@ -70,7 +70,7 @@ export default function LeavesPage() {
       setIsLoading(true)
       const { apiClient } = await import("@/lib/api-client")
       const data = await apiClient.getLeaveRequests({
-        companyId: company?.id || '68f5bc2cf855b93078938f4e',
+        companyId: company?.id || '',
         limit: 1000
       })
       // Handle the response format - it might be wrapped in data property

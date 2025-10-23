@@ -9,6 +9,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MessageSquare, Star, ThumbsUp, AlertCircle, CheckCircle, Search, Plus, Loader2 } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatDate } from "@/lib/utils/formatters"
+import { getStatusColor } from "@/lib/utils/status-colors"
+import SearchInput from "@/components/shared/SearchInput"
+import Loading from "@/components/shared/Loading"
 import {
   Dialog,
   DialogContent,
@@ -43,20 +49,9 @@ interface SupportTicket {
   lastUpdate: string
 }
 
-const statusColors = {
-  pending: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-  "in-progress": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  resolved: "bg-green-500/10 text-green-700 dark:text-green-400",
-  open: "bg-red-500/10 text-red-700 dark:text-red-400",
-}
-
-const priorityColors = {
-  low: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
-  medium: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-  high: "bg-red-500/10 text-red-700 dark:text-red-400",
-}
 
 export function AfterSalesContent() {
+  const { company } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [feedbackData, setFeedbackData] = useState<Feedback[]>([])
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([])
@@ -80,28 +75,16 @@ export function AfterSalesContent() {
 
       // Fetch feedback and support tickets in parallel
       const [feedbackResponse, ticketsResponse] = await Promise.all([
-        fetch('/api/feedback', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }),
-        fetch('/api/support-tickets', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        api.get(endpoints.feedback, { companyId: company?.id || '' }),
+        api.get(endpoints.supportTickets, { companyId: company?.id || '' })
       ])
 
-      if (feedbackResponse.ok) {
-        const feedbackData = await feedbackResponse.json()
-        setFeedbackData(feedbackData.data || [])
+      if (feedbackResponse.success) {
+        setFeedbackData(feedbackResponse.data || [])
       }
 
-      if (ticketsResponse.ok) {
-        const ticketsData = await ticketsResponse.json()
-        setSupportTickets(ticketsData.data || [])
+      if (ticketsResponse.success) {
+        setSupportTickets(ticketsResponse.data || [])
       }
     } catch (error) {
       console.error('Error fetching after-sales data:', error)
@@ -122,14 +105,7 @@ export function AfterSalesContent() {
     : "0"
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading after-sales data...</span>
-        </div>
-      </div>
-    )
+    return <Loading />
   }
 
   if (error) {
@@ -233,7 +209,7 @@ export function AfterSalesContent() {
                         <p className="font-medium">{feedback.customer}</p>
                         <p className="text-sm text-muted-foreground">{feedback.email}</p>
                       </div>
-                      <Badge variant="secondary" className={statusColors[feedback.status as keyof typeof statusColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
+                      <Badge variant="secondary" className={getStatusColor(feedback.status)}>
                         {feedback.status}
                       </Badge>
                     </div>
@@ -260,15 +236,11 @@ export function AfterSalesContent() {
 
         <TabsContent value="tickets" className="space-y-4">
           <div className="flex items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search tickets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+            <SearchInput
+              placeholder="Search tickets..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
             <Dialog open={isTicketDialogOpen} onOpenChange={setIsTicketDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -348,12 +320,12 @@ export function AfterSalesContent() {
                       </TableCell>
                       <TableCell>{ticket.subject}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={priorityColors[ticket.priority as keyof typeof priorityColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
+                        <Badge variant="secondary" className={getStatusColor(ticket.priority)}>
                           {ticket.priority}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={statusColors[ticket.status as keyof typeof statusColors] || "bg-gray-500/10 text-gray-700 dark:text-gray-400"}>
+                        <Badge variant="secondary" className={getStatusColor(ticket.status)}>
                           {ticket.status}
                         </Badge>
                       </TableCell>

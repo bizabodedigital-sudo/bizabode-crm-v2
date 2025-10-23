@@ -67,7 +67,7 @@ export default function LeaveApprovalsPage() {
   const fetchLeaveRequests = async () => {
     try {
       setIsLoading(true);
-      const companyId = localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e';
+      const companyId = company?.id || '';
       const response = await fetch(`/api/hr/leave-requests?companyId=${companyId}&limit=1000`);
       const data = await response.json();
       
@@ -95,7 +95,7 @@ export default function LeaveApprovalsPage() {
   const handleApproval = async (requestId: string, action: 'approve' | 'reject') => {
     try {
       setIsProcessing(true);
-      const approvedBy = localStorage.getItem('userId') || '68f5bc2cf855b93078938f4e';
+      const approvedBy = user?.id || 'system';
       
       const response = await fetch(`/api/hr/leave-requests/${requestId}/approve`, {
         method: 'PUT',

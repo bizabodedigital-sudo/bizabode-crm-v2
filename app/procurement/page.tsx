@@ -14,6 +14,7 @@ import { format } from "date-fns"
 import { PurchaseOrderFormDialog } from "@/components/procurement/purchase-order-form-dialog"
 import PurchaseOrdersTable from "@/components/procurement/purchase-orders-table"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 
 interface PurchaseOrder {
   _id: string
@@ -36,6 +37,7 @@ interface PurchaseOrder {
 }
 
 export default function ProcurementPage() {
+  const { company } = useAuth()
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -76,7 +78,7 @@ export default function ProcurementPage() {
 
   const fetchPurchaseOrders = async () => {
     try {
-      const companyId = localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e'
+      const companyId = company?.id || ''
       const response = await fetch(`/api/procurement/purchase-orders?companyId=${companyId}`)
       const data = await response.json()
       if (data.success) {
@@ -313,7 +315,7 @@ export default function ProcurementPage() {
           <CardDescription>Manage your purchase orders and track deliveries</CardDescription>
         </CardHeader>
         <CardContent>
-          <PurchaseOrdersTable companyId={localStorage.getItem('companyId') || '68f5bc2cf855b93078938f4e'} />
+          <PurchaseOrdersTable />
         </CardContent>
       </Card>
 

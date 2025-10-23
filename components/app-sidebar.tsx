@@ -16,6 +16,11 @@ import {
   LogOut,
   ShoppingCart,
   Clock,
+  Building,
+  ShoppingBag,
+  Activity,
+  Tag,
+  CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -53,6 +58,11 @@ const iconMap = {
   Key,
   ShoppingCart,
   Clock,
+  Building,
+  ShoppingBag,
+  Activity,
+  Tag,
+  CheckCircle,
 }
 
 export function AppSidebar() {

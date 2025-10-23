@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { getAuthHeaders } from "@/lib/utils/auth-headers"
+import { api, endpoints } from "@/lib/api-client-config"
 
 interface Attendance {
   _id: string
@@ -70,12 +71,11 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees', {
-        headers: getAuthHeaders()
+      const response = await api.get(endpoints.employees, {
+        companyId: company?.id || ''
       })
-      const data = await response.json()
-      if (data.success) {
-        setEmployees(data.data.filter((emp: any) => emp.status === 'active'))
+      if (response.success) {
+        setEmployees(response.data.filter((emp: any) => emp.status === 'active'))
       }
     } catch (error) {
       console.error('Failed to fetch employees:', error)
@@ -110,9 +110,6 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
     try {
       setIsLoading(true)
       
-      const url = attendance ? `/api/attendance/${attendance._id}` : '/api/attendance'
-      const method = attendance ? 'PUT' : 'POST'
-      
       const payload = {
         ...formData,
         checkIn: formData.checkIn ? `${formData.date}T${formData.checkIn}:00.000Z` : undefined,
@@ -122,25 +119,11 @@ export function AttendanceFormDialog({ open, onOpenChange, attendance, onSuccess
         date: `${formData.date}T00:00:00.000Z`
       }
       
-      const getAuthHeaders = () => {
-        const token = localStorage.getItem("bizabode_token")
-        return token
-          ? {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          : { 'Content-Type': 'application/json' }
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders() as HeadersInit,
-        body: JSON.stringify(payload)
-      })
+      const response = attendance 
+        ? await api.put(`${endpoints.hr.attendance}/${attendance._id}`, payload)
+        : await api.post(endpoints.hr.attendance, payload)
       
-      const data = await response.json()
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: attendance ? "Attendance updated successfully" : "Attendance recorded successfully",

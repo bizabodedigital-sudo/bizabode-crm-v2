@@ -11,7 +11,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "db:seed": "node scripts/simple-seed.js",
-    "db:reset": "node scripts/simple-seed.js"
+    "db:reset": "node scripts/simple-seed.js",
+    "env:init": "node scripts/init-env.js",
+    "env:check": "node -e \"console.log('Environment check:', process.env.NODE_ENV || 'development')\"",
+    "prebuild": "node scripts/init-env.js",
+    "prestart": "node scripts/init-env.js",
+    "startup": "node scripts/startup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -68,6 +73,7 @@
     "mongoose": "^8.4.0",
     "multer": "^2.0.2",
     "next": "15.2.4",
+    "next-auth": "^4.24.10",
     "next-themes": "^0.4.6",
     "node-cron": "^4.2.1",
     "nodemailer": "^6.9.13",

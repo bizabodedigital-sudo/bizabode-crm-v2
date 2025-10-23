@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/lib/auth-context';
+import { api, endpoints } from '@/lib/api-client-config';
+import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { getStatusColor } from '@/lib/utils/status-colors';
+import SearchInput from '@/components/shared/SearchInput';
+import Loading from '@/components/shared/Loading';
 import {
   Table,
   TableBody,
@@ -71,14 +77,6 @@ interface PurchaseOrdersTableProps {
   companyId: string;
 }
 
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  approved: 'bg-blue-100 text-blue-800',
-  sent: 'bg-yellow-100 text-yellow-800',
-  received: 'bg-green-100 text-green-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-};
 
 const statusIcons = {
   draft: Clock,
@@ -89,7 +87,8 @@ const statusIcons = {
   cancelled: XCircle,
 };
 
-export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTableProps) {
+export default function PurchaseOrdersTable() {
+  const { company } = useAuth();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,17 +102,21 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPurchaseOrders();
-  }, [companyId]);
+    if (company?.id) {
+      fetchPurchaseOrders();
+    }
+  }, [company?.id]);
 
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/procurement/purchase-orders?companyId=${companyId}&limit=1000`);
-      const data = await response.json();
+      const response = await api.get(endpoints.procurement.purchaseOrders, {
+        companyId: company?.id || '',
+        limit: 1000
+      });
       
-      if (data.success) {
-        setPurchaseOrders(data.data.purchaseOrders || []);
+      if (response.success) {
+        setPurchaseOrders(response.data.purchaseOrders || []);
       } else {
         toast({
           title: "Error",
@@ -136,19 +139,11 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
   const handleReceivePO = async (poId: string) => {
     try {
       setIsReceiving(true);
-      const response = await fetch(`/api/procurement/purchase-orders/${poId}/receive`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          performedBy: localStorage.getItem('userId') || 'system',
-        }),
+      const response = await api.post(`${endpoints.procurement.purchaseOrders}/${poId}/receive`, {
+        performedBy: company?.id || 'system',
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: "Purchase order marked as received successfully",
@@ -186,20 +181,12 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
 
     try {
       setIsUpdatingStatus(true);
-      const response = await fetch(`/api/procurement/purchase-orders/${poId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          notes: statusNotes,
-        }),
+      const response = await api.put(`${endpoints.procurement.purchaseOrders}/${poId}/status`, {
+        status: newStatus,
+        notes: statusNotes,
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: "Purchase order status updated successfully",
@@ -243,7 +230,7 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
   const getStatusBadge = (status: string) => {
     const StatusIcon = statusIcons[status as keyof typeof statusIcons];
     return (
-      <Badge className={statusColors[status as keyof typeof statusColors]}>
+      <Badge className={getStatusColor(status)}>
         <StatusIcon className="w-3 h-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -251,27 +238,18 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        <span>Loading purchase orders...</span>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
       <div className="flex items-center space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search purchase orders..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchInput
+          placeholder="Search purchase orders..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
       </div>
 
       {/* Purchase Orders Table */}
@@ -304,7 +282,7 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
                   <TableCell>{po.supplierId.name}</TableCell>
                   <TableCell>{getStatusBadge(po.status)}</TableCell>
                   <TableCell className="text-right font-mono">
-                    ${po.total.toFixed(2)}
+{formatCurrency(po.total, 'JMD')}
                   </TableCell>
                   <TableCell>
                     {po.expectedDate ? format(new Date(po.expectedDate), 'MMM dd, yyyy') : '-'}
@@ -349,7 +327,7 @@ export default function PurchaseOrdersTable({ companyId }: PurchaseOrdersTablePr
                                   <h4 className="font-medium">PO Information</h4>
                                   <p className="text-sm text-gray-600">Number: {selectedPO.number}</p>
                                   <p className="text-sm text-gray-600">Status: {selectedPO.status}</p>
-                                  <p className="text-sm text-gray-600">Total: ${selectedPO.total.toFixed(2)}</p>
+                                  <p className="text-sm text-gray-600">Total: {formatCurrency(selectedPO.total, 'JMD')}</p>
                                 </div>
                                 <div>
                                   <h4 className="font-medium">Supplier</h4>

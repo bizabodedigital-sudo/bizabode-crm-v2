@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Upload, Download, CheckCircle, XCircle, Loader2, FileText, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency } from "@/lib/utils/formatters"
+import Loading from "@/components/shared/Loading"
 
 interface ImportItem {
   sku: string
@@ -173,30 +176,21 @@ export function BulkImportDialog({ open, onOpenChange, onSuccess }: BulkImportDi
     setStep('result')
 
     try {
-      const response = await fetch('/api/inventory/items/bulk-import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          items: parsedItems,
-          companyId: company?.id,
-          createdBy: localStorage.getItem('userId') || 'system'
-        })
+      const response = await api.post(endpoints.inventory.bulkImport, {
+        items: parsedItems,
+        companyId: company?.id,
+        createdBy: company?.id || 'system'
       })
 
-      const result = await response.json()
-
-      if (response.ok) {
-        setImportResult(result.data)
+      if (response.success) {
+        setImportResult(response.data)
         toast({
           title: "Import completed",
-          description: `${result.data.success.length} items imported successfully`,
+          description: `${response.data.success.length} items imported successfully`,
         })
         onSuccess()
       } else {
-        throw new Error(result.message || 'Import failed')
+        throw new Error(response.error || 'Import failed')
       }
     } catch (error) {
       console.error('Import error:', error)

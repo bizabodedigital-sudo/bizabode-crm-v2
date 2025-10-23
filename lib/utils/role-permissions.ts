@@ -90,10 +90,18 @@ export function getNavItemsForRole(role: UserRole): {
   const allCrmNavItems: NavItem[] = [
     { title: "Leads", href: "/crm/leads", icon: "Users", roles: ['admin', 'manager', 'sales'] },
     { title: "Opportunities", href: "/crm/opportunities", icon: "Target", roles: ['admin', 'manager', 'sales'] },
+    { title: "Customers", href: "/crm/customers", icon: "Building", roles: ['admin', 'manager', 'sales'] },
     { title: "Quotes", href: "/crm/quotes", icon: "FileText", roles: ['admin', 'manager', 'sales'] },
+    { title: "Sales Orders", href: "/crm/sales-orders", icon: "ShoppingBag", roles: ['admin', 'manager', 'sales'] },
     { title: "Invoices", href: "/crm/invoices", icon: "Receipt", roles: ['admin', 'manager', 'sales'] },
     { title: "Payments", href: "/crm/payments", icon: "CreditCard", roles: ['admin', 'manager', 'sales'] },
     { title: "Deliveries", href: "/crm/deliveries", icon: "Truck", roles: ['admin', 'manager', 'sales'] },
+    { title: "Activities", href: "/crm/activities", icon: "Activity", roles: ['admin', 'manager', 'sales'] },
+    { title: "Credit Limits", href: "/crm/credit-limits", icon: "CreditCard", roles: ['admin', 'manager', 'sales'] },
+    { title: "Promotions", href: "/crm/promotions", icon: "Tag", roles: ['admin', 'manager', 'sales'] },
+    { title: "Documents", href: "/crm/documents", icon: "FileText", roles: ['admin', 'manager', 'sales'] },
+    { title: "Products", href: "/crm/products", icon: "Package", roles: ['admin', 'manager', 'sales'] },
+    { title: "Approvals", href: "/crm/approvals", icon: "CheckCircle", roles: ['admin', 'manager'] },
     { title: "Reports", href: "/crm/reports", icon: "BarChart3", roles: ['admin', 'manager', 'sales', 'viewer'] },
   ]
 

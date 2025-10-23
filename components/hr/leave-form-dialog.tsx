@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { getAuthHeaders } from "@/lib/utils/auth-headers"
+import { api, endpoints } from "@/lib/api-client-config"
 
 interface LeaveRequest {
   _id: string
@@ -68,12 +69,11 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees', {
-        headers: getAuthHeaders()
+      const response = await api.get(endpoints.employees, {
+        companyId: company?.id || ''
       })
-      const data = await response.json()
-      if (data.success) {
-        setEmployees(data.data.filter((emp: any) => emp.status === 'active'))
+      if (response.success) {
+        setEmployees(response.data.filter((emp: any) => emp.status === 'active'))
       }
     } catch (error) {
       console.error('Failed to fetch employees:', error)
@@ -127,9 +127,6 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
     try {
       setIsLoading(true)
       
-      const url = leave ? `/api/leaves/${leave._id}` : '/api/leaves'
-      const method = leave ? 'PUT' : 'POST'
-      
       const payload = {
         ...formData,
         startDate: `${formData.startDate}T00:00:00.000Z`,
@@ -137,25 +134,11 @@ export function LeaveFormDialog({ open, onOpenChange, leave, onSuccess }: LeaveF
         totalDays: calculateTotalDays()
       }
       
-      const getAuthHeaders = () => {
-        const token = localStorage.getItem("bizabode_token")
-        return token
-          ? {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          : { 'Content-Type': 'application/json' }
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders() as HeadersInit,
-        body: JSON.stringify(payload)
-      })
+      const response = leave 
+        ? await api.put(`${endpoints.hr.leaves}/${leave._id}`, payload)
+        : await api.post(endpoints.hr.leaves, payload)
       
-      const data = await response.json()
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: leave ? "Leave request updated successfully" : "Leave request submitted successfully",

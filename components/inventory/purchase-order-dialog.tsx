@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Loader2, AlertTriangle, Package, ExternalLink, ArrowRight } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency } from "@/lib/utils/formatters"
+import Loading from "@/components/shared/Loading"
 
 interface LowStockItem {
   id: string
@@ -51,15 +54,16 @@ export function PurchaseOrderDialog({ open, onOpenChange, onSuccess }: PurchaseO
   const fetchLowStockItems = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/inventory/items/low-stock-purchase-order?companyId=${company?.id}`)
+      const response = await api.get(endpoints.inventory.lowStockPurchaseOrder, {
+        companyId: company?.id || ''
+      })
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch low stock items')
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch low stock items')
       }
 
-      const data = await response.json()
-      console.log('Low stock items data:', data)
-      setLowStockItems(data.data.lowStockItems || [])
+      console.log('Low stock items data:', response.data)
+      setLowStockItems(response.data.lowStockItems || [])
     } catch (error) {
       console.error('Error fetching low stock items:', error)
       toast({
@@ -140,10 +144,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, onSuccess }: PurchaseO
 
         <div className="flex-1 overflow-hidden flex flex-col">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin mr-3" />
-              <span>Loading low stock items...</span>
-            </div>
+            <Loading />
           ) : lowStockItems.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />

@@ -12,6 +12,8 @@ import { Plus, Trash2, DollarSign } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { getAuthHeaders } from "@/lib/utils/auth-headers"
+import { api, endpoints } from "@/lib/api-client-config"
+import { formatCurrency } from "@/lib/utils/formatters"
 
 interface PayrollItem {
   type: 'salary' | 'overtime' | 'bonus' | 'commission' | 'allowance' | 'deduction'
@@ -85,12 +87,11 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees', {
-        headers: getAuthHeaders()
+      const response = await api.get(endpoints.employees, {
+        companyId: company?.id || ''
       })
-      const data = await response.json()
-      if (data.success) {
-        setEmployees(data.data.filter((emp: any) => emp.status === 'active'))
+      if (response.success) {
+        setEmployees(response.data.filter((emp: any) => emp.status === 'active'))
       }
     } catch (error) {
       console.error('Failed to fetch employees:', error)
@@ -152,9 +153,6 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
     try {
       setIsLoading(true)
       
-      const url = payroll ? `/api/payroll/${payroll._id}` : '/api/payroll'
-      const method = payroll ? 'PUT' : 'POST'
-      
       const { grossPay, deductions, netPay } = calculateTotals()
       
       const payload = {
@@ -169,25 +167,11 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
         paymentDate: formData.paymentDate ? `${formData.paymentDate}T00:00:00.000Z` : undefined
       }
       
-      const getAuthHeaders = () => {
-        const token = localStorage.getItem("bizabode_token")
-        return token
-          ? {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          : { 'Content-Type': 'application/json' }
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders() as HeadersInit,
-        body: JSON.stringify(payload)
-      })
+      const response = payroll 
+        ? await api.put(`${endpoints.hr.payroll}/${payroll._id}`, payload)
+        : await api.post(endpoints.hr.payroll, payload)
       
-      const data = await response.json()
-      
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: payroll ? "Payroll updated successfully" : "Payroll processed successfully",
@@ -435,15 +419,15 @@ export function PayrollFormDialog({ open, onOpenChange, payroll, onSuccess }: Pa
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-muted-foreground">Gross Pay</p>
-                  <p className="text-2xl font-bold">${(totals.grossPay || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(totals.grossPay || 0, 'JMD')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Deductions</p>
-                  <p className="text-2xl font-bold text-red-600">${(totals.deductions || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-red-600">{formatCurrency(totals.deductions || 0, 'JMD')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Net Pay</p>
-                  <p className="text-2xl font-bold text-green-600">${(totals.netPay || totals.grossPay || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.netPay || totals.grossPay || 0, 'JMD')}</p>
                 </div>
               </div>
             </CardContent>

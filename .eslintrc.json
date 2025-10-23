@@ -1,0 +1,53 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "Literal[value='68f5bc2cf855b93078938f4e']",
+        "message": "Hardcoded company ID detected. Use useAuth() context instead."
+      },
+      {
+        "selector": "Literal[value='system']",
+        "message": "Hardcoded 'system' user ID detected. Extract from auth session instead."
+      },
+      {
+        "selector": "CallExpression[callee.name='fetch'][arguments.0.type='Literal'][arguments.0.value=/^\\/api\\//]",
+        "message": "Direct fetch calls to /api/ endpoints detected. Use centralized API client instead."
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["../utils/*"],
+            "message": "Use centralized utilities from @/lib/utils/ instead of relative imports."
+          }
+        ]
+      }
+    ],
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-alert": "error",
+    "no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "error",
+    "@typescript-eslint/prefer-optional-chain": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
+}
