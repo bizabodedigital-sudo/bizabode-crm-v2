@@ -16,8 +16,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-    ports:
-      - "3000:3000"      # Coolify routes traffic here automatically
+    expose:
+      - "3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
