@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"   # Coolify will route public traffic here automatically
+      - "3000:3000" # Coolify will route HTTP/HTTPS traffic here
     environment:
       NODE_ENV: production
       MONGODB_URI: ${MONGODB_URI}
