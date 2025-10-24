@@ -178,16 +178,19 @@ docker-compose logs -f app
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Coolify Deployment (Recommended)
+For easy deployment on Coolify, see the [Coolify Deployment Guide](COOLIFY_DEPLOYMENT_README.md) for step-by-step instructions.
+
+### Local Docker Deployment
 ```bash
 # Use production configuration
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.coolify.yml up -d
 ```
 
 ### Environment-Specific Configs
 - **Development:** `docker-compose.yml`
-- **Production:** `docker-compose.prod.yml`
-- **Staging:** `docker-compose.staging.yml`
+- **Coolify:** `docker-compose.coolify.yml`
+- **Production:** `Dockerfile.production`
 
 ## 🔒 Security
 

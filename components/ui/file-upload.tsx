@@ -79,8 +79,14 @@ export function FileUpload({
         formData.append('type', type)
         formData.append('entityId', entityId)
 
+        // Get auth token from localStorage
+        const token = localStorage.getItem('bizabode_token')
+        
         const response = await fetch('/api/files/upload', {
           method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
           body: formData,
         })
 
@@ -124,9 +130,17 @@ export function FileUpload({
 
   const handleRemoveFile = async (fileId: string, fileName: string) => {
     try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('bizabode_token')
+      
       const response = await fetch(
         `/api/files?type=${type}&entityId=${entityId}&fileName=${fileName}`,
-        { method: 'DELETE' }
+        { 
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
       )
 
       if (response.ok) {
