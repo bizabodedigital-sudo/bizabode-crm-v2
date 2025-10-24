@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     restart: always
     environment:
       NODE_ENV: production
@@ -13,17 +13,17 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       JWT_SECRET: ${JWT_SECRET}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+    ports:
+      - "3000:3000"
     depends_on:
-      mongodb:
-        condition: service_healthy
-    expose:
-      - "3000"
+      - mongodb
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
 
   mongodb:
     image: mongo:7.0
@@ -34,8 +34,6 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     volumes:
       - mongodb_data:/data/db
-      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - ./backups:/backup
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
@@ -53,6 +51,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
 volumes:
   mongodb_data:
