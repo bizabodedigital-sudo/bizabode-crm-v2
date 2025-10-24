@@ -21,30 +21,16 @@ Your original Docker Compose configuration has several issues preventing app acc
 
 ## Recommended Solutions
 
-### Option 1: Direct Port Mapping (Recommended for Coolify)
-Use `docker-compose.simple.yml` - This is the simplest approach for Coolify:
+### Simplified Coolify Configuration
+Use `docker-compose.coolify.yml` - Optimized for Coolify deployment:
 
 ```yaml
-# Key changes:
-ports:
-  - "3000:3000"  # Instead of expose
-depends_on:
-  - mongodb      # Simple dependency, not health-based
-  - redis
-```
-
-### Option 2: With Health Checks
-Use `docker-compose.coolify.yml` - More robust but requires all services to be healthy:
-
-```yaml
-# Key changes:
-ports:
-  - "3000:3000"
-depends_on:
-  mongodb:
-    condition: service_healthy
-  redis:
-    condition: service_healthy
+# Key features:
+# - No port mapping (Coolify handles this)
+# - No health checks (Coolify manages monitoring)
+# - No restart policies (Coolify handles restarts)
+# - No nginx/reverse proxy (Coolify uses Traefik)
+# - Simple dependencies (Coolify manages service orchestration)
 ```
 
 ## Environment Variables Required
@@ -63,20 +49,15 @@ MONGO_DATABASE=bizabode_crm
 
 ## Deployment Steps
 
-1. **Use the corrected docker-compose file**:
-   - For simple deployment: `docker-compose.simple.yml`
-   - For production with health checks: `docker-compose.coolify.yml`
+1. **Use the optimized docker-compose file**:
+   - Use `docker-compose.coolify.yml` (simplified for Coolify)
 
 2. **Set environment variables** in Coolify dashboard
 
-3. **Deploy and check logs**:
-   ```bash
-   # Check app logs
-   docker-compose logs app
-   
-   # Check if app is responding
-   curl http://localhost:3000/api/health
-   ```
+3. **Deploy through Coolify**:
+   - Coolify handles port mapping, SSL, and reverse proxy automatically
+   - No need for manual port configuration
+   - SSL certificates are auto-provisioned
 
 ## Troubleshooting Commands
 
