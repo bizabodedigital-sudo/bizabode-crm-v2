@@ -95,7 +95,7 @@ export function ApprovalsTable() {
       if (priorityFilter && priorityFilter !== 'all') params.priority = priorityFilter
       if (overdueFilter && overdueFilter !== 'all') params.overdue = overdueFilter
 
-      const response = await api.get(endpoints.crm.approvals, params)
+      const response = await api.crm.approvals.list(params)
       
       if (response.success) {
         setApprovals(response.data)

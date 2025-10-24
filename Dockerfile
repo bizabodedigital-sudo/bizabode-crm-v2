@@ -55,6 +55,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Create necessary directories
 RUN mkdir -p .next && chown nextjs:nodejs .next
+RUN mkdir -p uploads && chown nextjs:nodejs uploads
 
 # Switch to non-root user
 USER nextjs

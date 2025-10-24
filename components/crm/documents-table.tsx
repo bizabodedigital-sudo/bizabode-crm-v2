@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Filter, FileText, Download, Eye, Trash2, Upload } from 'lucide-react'
+import { Plus, Filter, FileText, Download, Eye, Trash2, Upload, Search } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { api, endpoints } from '@/lib/api-client-config'
 import { formatFileSize, formatDate } from '@/lib/utils/formatters'
@@ -70,7 +71,7 @@ export function DocumentsTable() {
       if (relatedToFilter && relatedToFilter !== 'all') params.relatedTo = relatedToFilter
       if (accessLevelFilter && accessLevelFilter !== 'all') params.accessLevel = accessLevelFilter
 
-      const response = await api.get(endpoints.crm.documents, params)
+      const response = await api.crm.documents.list(params)
       
       if (response.success) {
         setDocuments(response.data)

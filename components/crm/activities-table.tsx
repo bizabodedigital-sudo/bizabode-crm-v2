@@ -63,7 +63,7 @@ export function ActivitiesTable() {
   const fetchActivities = async () => {
     try {
       setIsLoading(true)
-      const response = await api.get(endpoints.crm.activities, {
+      const response = await api.crm.activities.list({
         companyId: company?.id || '',
         limit: 100
       })

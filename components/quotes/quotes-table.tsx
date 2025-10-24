@@ -90,7 +90,7 @@ export function QuotesTable() {
 
   const handleDownloadPDF = async (quote: Quote) => {
     try {
-      const response = await api.get(endpoints.quotes.downloadPdf((quote as any)._id || quote.id))
+      const response = await api.crm.quotes.downloadPdf((quote as any)._id || quote.id)
       
       if (!response.success) {
         throw new Error(response.error || 'PDF download failed')

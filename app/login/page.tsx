@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@bizabode.com"
+                  placeholder="rojay@bizabode.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -96,8 +96,8 @@ export default function LoginPage() {
                   Demo Credentials
                 </p>
                 <div className="space-y-1 text-muted-foreground">
-                  <p className="font-mono">admin@bizabode.com</p>
-                  <p className="font-mono">admin123</p>
+                  <p className="font-mono">rojay@bizabode.com</p>
+                  <p className="font-mono">password123</p>
                 </div>
               </div>
             </CardContent>

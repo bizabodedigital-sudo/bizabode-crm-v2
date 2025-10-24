@@ -44,7 +44,7 @@ export function SalesOrdersTable() {
   const fetchSalesOrders = async () => {
     try {
       setIsLoading(true)
-      const response = await api.get(endpoints.crm.salesOrders, {
+      const response = await api.crm.salesOrders.list({
         companyId: company?.id || '',
         limit: 100
       })

@@ -110,7 +110,7 @@ export default function PurchaseOrdersTable() {
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-      const response = await api.get(endpoints.procurement.purchaseOrders, {
+      const response = await api.procurement.purchaseOrders.list({
         companyId: company?.id || '',
         limit: 1000
       });

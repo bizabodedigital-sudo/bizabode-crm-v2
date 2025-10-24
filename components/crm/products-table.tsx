@@ -78,7 +78,7 @@ export function ProductsTable() {
       if (lowStockFilter && lowStockFilter !== 'all') params.lowStock = lowStockFilter
       if (searchTerm) params.search = searchTerm
 
-      const response = await api.get(endpoints.crm.products, params)
+      const response = await api.crm.products.list(params)
       
       if (response.success) {
         setProducts(response.data)
