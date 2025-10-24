@@ -1,6 +1,3 @@
-// Initialize environment fallbacks before Next.js config
-require('./lib/env-runtime');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['mongoose'],
