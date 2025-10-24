@@ -90,7 +90,12 @@ export function AnalyticsSection() {
         throw new Error('No authentication token found')
       }
 
-      const response = await fetch(`/api/inventory/analytics?companyId=${company?.id || "company-1"}`, {
+      if (!company?.id) {
+        console.error('Company ID is missing')
+        return
+      }
+
+      const response = await fetch(`/api/inventory/analytics?companyId=${company.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

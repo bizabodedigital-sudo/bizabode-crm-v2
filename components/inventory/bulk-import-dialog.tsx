@@ -179,7 +179,7 @@ export function BulkImportDialog({ open, onOpenChange, onSuccess }: BulkImportDi
       const response = await api.post(endpoints.inventory.bulkImport, {
         items: parsedItems,
         companyId: company?.id,
-        createdBy: company?.id || 'system'
+        createdBy: company?.id
       })
 
       if (response.success) {

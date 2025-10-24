@@ -8,11 +8,12 @@ import { Edit, Trash2, Plus, Eye, Star } from "lucide-react"
 import type { Customer } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { api, endpoints } from "@/lib/api-client-config"
+import { api } from "@/lib/api-client-config"
 import { formatCurrency } from "@/lib/utils/formatters"
 import { getStatusColor, getCategoryColor } from "@/lib/utils/status-colors"
 import SearchInput from "@/components/shared/SearchInput"
 import Loading from "@/components/shared/Loading"
+import { CustomerFormDialog } from "./customer-form-dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +45,7 @@ export function CustomersTable() {
   const fetchCustomers = async () => {
     try {
       setIsLoading(true)
-      const response = await api.get(endpoints.crm.customers, {
+      const response = await api.crm.customers.list({
         companyId: company?.id || '',
         limit: 100
       })
@@ -73,7 +74,7 @@ export function CustomersTable() {
   const handleDelete = async () => {
     if (deletingCustomer) {
       try {
-        const response = await api.delete(`${endpoints.crm.customers}/${deletingCustomer.id}`)
+        const response = await api.crm.customers.delete(deletingCustomer.id)
         
         if (response.success) {
           setCustomers(customers.filter(customer => customer.id !== deletingCustomer.id))
@@ -180,7 +181,10 @@ export function CustomersTable() {
                         <Button variant="ghost" size="icon" onClick={() => setEditingCustomer(customer)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setEditingCustomer(customer)}>
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          setEditingCustomer(customer)
+                          setIsAddDialogOpen(true)
+                        }}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeletingCustomer(customer)}>
@@ -195,6 +199,18 @@ export function CustomersTable() {
           </Table>
         </div>
       )}
+
+      <CustomerFormDialog
+        open={isAddDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddDialogOpen(open)
+          if (!open) {
+            setEditingCustomer(null)
+          }
+        }}
+        customer={editingCustomer}
+        onSuccess={fetchCustomers}
+      />
 
       <AlertDialog open={!!deletingCustomer} onOpenChange={(open) => !open && setDeletingCustomer(null)}>
         <AlertDialogContent>

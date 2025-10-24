@@ -19,51 +19,13 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-const salesFunnelData = [
-  { stage: "Leads", count: 150, value: 0 },
-  { stage: "Qualified", count: 85, value: 425000 },
-  { stage: "Proposal", count: 45, value: 337500 },
-  { stage: "Negotiation", count: 25, value: 187500 },
-  { stage: "Closed Won", count: 15, value: 112500 },
-]
-
-const monthlyRevenueData = [
-  { month: "Jan", revenue: 45000, target: 50000 },
-  { month: "Feb", revenue: 52000, target: 50000 },
-  { month: "Mar", revenue: 48000, target: 50000 },
-  { month: "Apr", revenue: 61000, target: 55000 },
-  { month: "May", revenue: 55000, target: 55000 },
-  { month: "Jun", revenue: 67000, target: 60000 },
-]
-
-const topCustomersData = [
-  { name: "TechCorp Inc", revenue: 125000, orders: 15 },
-  { name: "StartupCo", revenue: 98000, orders: 12 },
-  { name: "Enterprise Ltd", revenue: 87000, orders: 10 },
-  { name: "Digital Solutions", revenue: 76000, orders: 9 },
-  { name: "Innovation Hub", revenue: 65000, orders: 8 },
-]
-
-const productPerformanceData = [
-  { name: "Wireless Mouse", value: 35, color: "#3b82f6" },
-  { name: "Mechanical Keyboard", value: 28, color: "#10b981" },
-  { name: "USB-C Hub", value: 22, color: "#f59e0b" },
-  { name: "Monitor Stand", value: 15, color: "#8b5cf6" },
-]
-
-const conversionRatesData = [
-  { stage: "Lead to Qualified", rate: 56.7 },
-  { stage: "Qualified to Proposal", rate: 52.9 },
-  { stage: "Proposal to Negotiation", rate: 55.6 },
-  { stage: "Negotiation to Won", rate: 60.0 },
-]
-
-const paymentAgingData = [
-  { category: "Current", amount: 125000, count: 15 },
-  { category: "1-30 Days", amount: 45000, count: 8 },
-  { category: "31-60 Days", amount: 28000, count: 5 },
-  { category: "60+ Days", amount: 12000, count: 3 },
-]
+// TODO: Replace with real data from API
+const salesFunnelData = []
+const monthlyRevenueData = []
+const topCustomersData = []
+const productPerformanceData = []
+const conversionRatesData = []
+const paymentAgingData = []
 
 export function ReportsContent() {
   return (
@@ -96,9 +58,9 @@ export function ReportsContent() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$328,000</div>
+                <div className="text-2xl font-bold">$0</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+12.5%</span> from last period
+                  No revenue data available
                 </p>
               </CardContent>
             </Card>
@@ -109,9 +71,9 @@ export function ReportsContent() {
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">45</div>
+                <div className="text-2xl font-bold">0</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+8</span> new this month
+                  No opportunities data available
                 </p>
               </CardContent>
             </Card>
@@ -122,9 +84,9 @@ export function ReportsContent() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">56.7%</div>
+                <div className="text-2xl font-bold">0%</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+3.2%</span> improvement
+                  No conversion data available
                 </p>
               </CardContent>
             </Card>
@@ -135,9 +97,9 @@ export function ReportsContent() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$7,500</div>
+                <div className="text-2xl font-bold">$0</div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+$450</span> from last month
+                  No deal size data available
                 </p>
               </CardContent>
             </Card>
@@ -150,24 +112,13 @@ export function ReportsContent() {
                 <CardDescription>Revenue vs Target over the last 6 months</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyRevenueData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} name="Revenue" />
-                    <Line
-                      type="monotone"
-                      dataKey="target"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      name="Target"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-lg font-medium">No revenue data available</p>
+                    <p className="text-sm">Revenue trends will appear here when data is available</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -177,25 +128,15 @@ export function ReportsContent() {
                 <CardDescription>Sales distribution by product category</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={productPerformanceData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {productPerformanceData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  <div className="text-center">
+                    <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                      <span className="text-2xl">📊</span>
+                    </div>
+                    <p className="text-lg font-medium">No product data available</p>
+                    <p className="text-sm">Product performance will appear here when data is available</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -275,23 +216,14 @@ export function ReportsContent() {
               <CardDescription>Your highest value customers this period</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {topCustomersData.map((customer, index) => (
-                  <div key={customer.name} className="flex items-center justify-between border-b pb-4 last:border-0">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-medium">{customer.name}</p>
-                        <p className="text-sm text-muted-foreground">{customer.orders} orders</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono font-bold">${customer.revenue.toLocaleString()}</p>
-                    </div>
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                <div className="text-center">
+                  <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                    <span className="text-2xl">👥</span>
                   </div>
-                ))}
+                  <p className="text-lg font-medium">No customer data available</p>
+                  <p className="text-sm">Customer analytics will appear here when data is available</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -304,25 +236,15 @@ export function ReportsContent() {
               <CardDescription>Revenue breakdown by product category</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    data={productPerformanceData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, value }) => `${name}: ${value}%`}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {productPerformanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+                <div className="text-center">
+                  <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                    <span className="text-2xl">📦</span>
+                  </div>
+                  <p className="text-lg font-medium">No product data available</p>
+                  <p className="text-sm">Product analytics will appear here when data is available</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -334,18 +256,15 @@ export function ReportsContent() {
               <CardDescription>Outstanding invoices by age category</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={paymentAgingData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="amount" fill="#3b82f6" name="Amount ($)" />
-                  <Bar yAxisId="right" dataKey="count" fill="#10b981" name="Count" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+                <div className="text-center">
+                  <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                    <span className="text-2xl">💳</span>
+                  </div>
+                  <p className="text-lg font-medium">No payment data available</p>
+                  <p className="text-sm">Payment analytics will appear here when data is available</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -356,8 +275,8 @@ export function ReportsContent() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$210,000</div>
-                <p className="text-xs text-muted-foreground">Across 31 invoices</p>
+                <div className="text-2xl font-bold">$0</div>
+                <p className="text-xs text-muted-foreground">No outstanding invoices</p>
               </CardContent>
             </Card>
 
@@ -367,8 +286,8 @@ export function ReportsContent() {
                 <DollarSign className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">$40,000</div>
-                <p className="text-xs text-muted-foreground">8 overdue invoices</p>
+                <div className="text-2xl font-bold text-red-600">$0</div>
+                <p className="text-xs text-muted-foreground">No overdue invoices</p>
               </CardContent>
             </Card>
 
@@ -378,8 +297,8 @@ export function ReportsContent() {
                 <TrendingUp className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">81%</div>
-                <p className="text-xs text-muted-foreground">On-time payment rate</p>
+                <div className="text-2xl font-bold text-green-600">0%</div>
+                <p className="text-xs text-muted-foreground">No payment data available</p>
               </CardContent>
             </Card>
           </div>

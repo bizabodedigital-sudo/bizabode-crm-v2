@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Calendar, Clock, AlertTriangle, CheckCircle, Plus } from 'lucide-react'
 import { Task } from '@/lib/types'
+import { TaskFormDialog } from './task-form-dialog'
 
 interface TasksWidgetProps {
   companyId: string
@@ -16,6 +17,8 @@ interface TasksWidgetProps {
 export function TasksWidget({ companyId, userId }: TasksWidgetProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -121,7 +124,7 @@ export function TasksWidget({ companyId, userId }: TasksWidgetProps) {
             <Calendar className="h-5 w-5" />
             Tasks
           </CardTitle>
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" onClick={() => setIsTaskDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             New Task
           </Button>
@@ -207,7 +210,7 @@ export function TasksWidget({ companyId, userId }: TasksWidgetProps) {
                   {task.status === 'Completed' && (
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   )}
-                  <Button size="sm" variant="ghost">
+                  <Button size="sm" variant="ghost" onClick={() => setEditingTask(task)}>
                     View
                   </Button>
                 </div>
@@ -225,6 +228,21 @@ export function TasksWidget({ companyId, userId }: TasksWidgetProps) {
           </div>
         )}
       </CardContent>
+
+      {/* Task Form Dialog */}
+      <TaskFormDialog
+        open={isTaskDialogOpen}
+        onOpenChange={setIsTaskDialogOpen}
+        onSuccess={fetchTasks}
+      />
+
+      {/* Edit Task Dialog */}
+      <TaskFormDialog
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+        task={editingTask}
+        onSuccess={fetchTasks}
+      />
     </Card>
   )
 }

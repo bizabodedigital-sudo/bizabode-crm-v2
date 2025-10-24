@@ -301,30 +301,11 @@ export default function HRPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">John Smith - Vacation</p>
-                    <p className="text-xs text-muted-foreground">Dec 15-20, 2024</p>
-                  </div>
-                </div>
-                <Badge variant="outline">Pending</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Sarah Johnson - Sick Leave</p>
-                    <p className="text-xs text-muted-foreground">Dec 12, 2024</p>
-                  </div>
-                </div>
-                <Badge variant="outline">Pending</Badge>
-              </div>
-              
-              <div className="text-center py-4">
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>No pending leave requests</p>
+              <p className="text-sm">All leave requests have been processed</p>
+              <div className="mt-4">
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/hr/leave-approvals">
                     View All Requests
@@ -347,41 +328,11 @@ export default function HRPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">John Smith</p>
-                    <p className="text-xs text-muted-foreground">Clocked in at 9:00 AM</p>
-                  </div>
-                </div>
-                <Badge className="bg-green-100 text-green-800">Present</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Sarah Johnson</p>
-                    <p className="text-xs text-muted-foreground">Clocked in at 9:15 AM</p>
-                  </div>
-                </div>
-                <Badge className="bg-yellow-100 text-yellow-800">Late</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Mike Brown</p>
-                    <p className="text-xs text-muted-foreground">Not clocked in</p>
-                  </div>
-                </div>
-                <Badge className="bg-red-100 text-red-800">Absent</Badge>
-              </div>
-              
-              <div className="text-center py-4">
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>No attendance data available</p>
+              <p className="text-sm">Attendance tracking will be available soon</p>
+              <div className="mt-4">
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/hr/attendance">
                     View Full Attendance
@@ -405,19 +356,10 @@ export default function HRPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">95%</div>
-              <p className="text-sm text-muted-foreground">Attendance Rate</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">3</div>
-              <p className="text-sm text-muted-foreground">Pending Approvals</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">$45K</div>
-              <p className="text-sm text-muted-foreground">Monthly Payroll</p>
-            </div>
+          <div className="text-center py-8 text-muted-foreground">
+            <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <p>HR Analytics coming soon</p>
+            <p className="text-sm">Advanced analytics and insights will be available</p>
           </div>
         </CardContent>
       </Card>
@@ -431,39 +373,10 @@ export default function HRPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">New employee added</p>
-                <p className="text-xs text-muted-foreground">
-                  Sarah Johnson joined the team
-                </p>
-              </div>
-              <Badge variant="secondary">2 hours ago</Badge>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Leave request submitted</p>
-                <p className="text-xs text-muted-foreground">
-                  John Smith requested vacation
-                </p>
-              </div>
-              <Badge variant="secondary">4 hours ago</Badge>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Attendance alert</p>
-                <p className="text-xs text-muted-foreground">
-                  Mike Brown is running late
-                </p>
-              </div>
-              <Badge variant="secondary">6 hours ago</Badge>
-            </div>
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="w-2 h-2 bg-muted-foreground/20 rounded-full mx-auto mb-4"></div>
+            <p>No recent activity</p>
+            <p className="text-sm">HR activity will appear here as it happens</p>
           </div>
         </CardContent>
       </Card>

@@ -5,8 +5,167 @@ import { IUser } from '@/lib/models/User'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
 import Invoice from '@/lib/models/Invoice'
+import Notification from '@/lib/models/Notification'
 
 export class NotificationService {
+  /**
+   * Send notification to user (database + email)
+   */
+  static async sendNotification({
+    userId,
+    title,
+    message,
+    type = 'general',
+    priority = 'Medium',
+    data = {},
+    relatedTaskId,
+    relatedActivityId,
+    relatedLeadId,
+    relatedOpportunityId,
+    relatedCustomerId,
+    relatedOrderId,
+    relatedInvoiceId,
+    relatedQuoteId,
+    expiresAt,
+    sendEmail = false
+  }: {
+    userId: string
+    title: string
+    message: string
+    type?: string
+    priority?: 'Low' | 'Medium' | 'High' | 'Urgent'
+    data?: Record<string, any>
+    relatedTaskId?: string
+    relatedActivityId?: string
+    relatedLeadId?: string
+    relatedOpportunityId?: string
+    relatedCustomerId?: string
+    relatedOrderId?: string
+    relatedInvoiceId?: string
+    relatedQuoteId?: string
+    expiresAt?: Date
+    sendEmail?: boolean
+  }): Promise<void> {
+    try {
+      await connectDB()
+      
+      // Get user info
+      const user = await User.findById(userId).populate('companyId', 'name')
+      if (!user) {
+        console.error(`User not found: ${userId}`)
+        return
+      }
+      
+      // Create notification in database
+      const notification = new Notification({
+        userId,
+        companyId: user.companyId,
+        title,
+        message,
+        type,
+        priority,
+        data,
+        relatedTaskId,
+        relatedActivityId,
+        relatedLeadId,
+        relatedOpportunityId,
+        relatedCustomerId,
+        relatedOrderId,
+        relatedInvoiceId,
+        relatedQuoteId,
+        expiresAt
+      })
+      
+      await notification.save()
+      
+      // Send email if requested
+      if (sendEmail && user.email) {
+        try {
+          await EmailService.sendNotificationEmail({
+            to: user.email,
+            title,
+            message,
+            type,
+            priority,
+            data
+          })
+        } catch (emailError) {
+          console.error('Failed to send notification email:', emailError)
+        }
+      }
+      
+      console.log(`Notification sent to user ${userId}: ${title}`)
+    } catch (error) {
+      console.error('Error sending notification:', error)
+    }
+  }
+
+  /**
+   * Mark notification as read
+   */
+  static async markAsRead(notificationId: string, userId: string): Promise<void> {
+    try {
+      await connectDB()
+      
+      await Notification.findOneAndUpdate(
+        { _id: notificationId, userId },
+        { isRead: true, readAt: new Date() }
+      )
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+    }
+  }
+
+  /**
+   * Mark all notifications as read for user
+   */
+  static async markAllAsRead(userId: string): Promise<void> {
+    try {
+      await connectDB()
+      
+      await Notification.updateMany(
+        { userId, isRead: false },
+        { isRead: true, readAt: new Date() }
+      )
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error)
+    }
+  }
+
+  /**
+   * Get unread notification count for user
+   */
+  static async getUnreadCount(userId: string): Promise<number> {
+    try {
+      await connectDB()
+      
+      return await Notification.countDocuments({
+        userId,
+        isRead: false
+      })
+    } catch (error) {
+      console.error('Error getting unread count:', error)
+      return 0
+    }
+  }
+
+  /**
+   * Clean up expired notifications
+   */
+  static async cleanupExpiredNotifications(): Promise<void> {
+    try {
+      await connectDB()
+      
+      const result = await Notification.deleteMany({
+        expiresAt: { $lt: new Date() }
+      })
+      
+      console.log(`Cleaned up ${result.deletedCount} expired notifications`)
+    } catch (error) {
+      console.error('Error cleaning up expired notifications:', error)
+    }
+  }
+
   /**
    * Check for low stock items and send notifications
    */

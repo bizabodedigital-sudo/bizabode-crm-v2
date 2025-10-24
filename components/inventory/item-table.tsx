@@ -80,7 +80,7 @@ export function ItemTable() {
   const handleExportCSV = async () => {
     try {
       setIsExporting(true)
-      const response = await api.get(endpoints.inventory.exportCsv, {
+      const response = await api.inventory.items.exportCsv({
         companyId: company?.id || ''
       })
       

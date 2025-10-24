@@ -2,6 +2,9 @@ import cron from 'node-cron'
 import { connectDB } from '../lib/db'
 import Invoice from '../lib/models/Invoice'
 import User from '../lib/models/User'
+import Task from '../lib/models/Task'
+import Activity from '../lib/models/Activity'
+import { NotificationService } from '../lib/services/notification-service'
 
 /**
  * Daily overdue invoice check - runs at 9 AM every day
@@ -19,9 +22,10 @@ export function startOverdueInvoiceCheck() {
       
       // Find all overdue invoices (status is 'sent' and due date is in the past)
       const overdueInvoices = await Invoice.find({
-        status: 'sent',
+        status: { $in: ['sent', 'overdue'] },
         dueDate: { $lt: today }
       }).populate('companyId')
+        .populate('customerId', 'companyName contactPerson email')
       
       if (overdueInvoices.length === 0) {
         console.log('No overdue invoices found')
@@ -57,10 +61,16 @@ export function startOverdueInvoiceCheck() {
         // Calculate total overdue amount
         const totalOverdue = invoices.reduce((sum: number, invoice: any) => sum + invoice.total, 0)
         
-        // Prepare email content
+        // Prepare email content with escalation levels
         const invoiceList = invoices.map((invoice: any) => {
           const daysOverdue = Math.floor((today.getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24))
-          return `• ${invoice.invoiceNumber} - $${invoice.total.toFixed(2)} (${daysOverdue} days overdue)`
+          let urgencyLevel = ''
+          if (daysOverdue >= 30) urgencyLevel = '🔴 CRITICAL'
+          else if (daysOverdue >= 14) urgencyLevel = '🟡 HIGH'
+          else if (daysOverdue >= 7) urgencyLevel = '🟠 MEDIUM'
+          else urgencyLevel = '🟢 LOW'
+          
+          return `• ${invoice.invoiceNumber} - $${invoice.total.toFixed(2)} (${daysOverdue} days overdue) ${urgencyLevel}`
         }).join('\n')
         
         const emailContent = `
@@ -96,6 +106,82 @@ export function startOverdueInvoiceCheck() {
             console.log(`Overdue invoice alert sent to ${user.email}`)
           } catch (error) {
             console.error(`Failed to send overdue invoice alert to ${user.email}:`, error)
+          }
+        }
+
+          // Send in-app notifications
+          for (const user of adminUsers) {
+            try {
+              await NotificationService.sendNotification({
+                userId: user._id,
+                title: 'Overdue Invoices Alert',
+                message: `You have ${invoices.length} overdue invoices totaling $${totalOverdue.toFixed(2)}`,
+                type: 'overdue_invoices',
+                priority: 'High',
+                data: {
+                  invoiceCount: invoices.length,
+                  totalAmount: totalOverdue,
+                  companyId: companyId
+                },
+                sendEmail: true
+              })
+            } catch (error) {
+              console.error(`Failed to send notification to user ${user._id}:`, error)
+            }
+          }
+
+        // Create follow-up tasks for critical invoices (30+ days overdue)
+        const criticalInvoices = invoices.filter((invoice: any) => {
+          const daysOverdue = Math.floor((today.getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24))
+          return daysOverdue >= 30
+        })
+
+        for (const invoice of criticalInvoices) {
+          try {
+            // Check if task already exists for this invoice
+            const existingTask = await Task.findOne({
+              companyId: companyId,
+              relatedTo: 'Invoice',
+              relatedId: invoice._id,
+              type: 'Follow-up',
+              status: { $in: ['Pending', 'In Progress'] }
+            })
+
+            if (!existingTask) {
+              // Create urgent follow-up task
+              const followUpTask = new Task({
+                companyId: companyId,
+                title: `URGENT: Collect payment for ${invoice.invoiceNumber}`,
+                description: `Invoice ${invoice.invoiceNumber} is ${Math.floor((today.getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24))} days overdue. Amount: $${invoice.total.toFixed(2)}. Customer: ${invoice.customerId?.companyName || 'Unknown'}`,
+                type: 'Follow-up',
+                relatedTo: 'Invoice',
+                relatedId: invoice._id,
+                assignedTo: adminUsers[0]._id, // Assign to first admin
+                createdBy: adminUsers[0]._id,
+                dueDate: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Due in 1 day
+                priority: 'Urgent',
+                status: 'Pending',
+                notes: `Auto-generated: Critical overdue invoice requiring immediate attention`
+              })
+
+              await followUpTask.save()
+
+              // Create activity log
+              await Activity.create({
+                companyId: companyId,
+                type: 'Note',
+                subject: 'Critical Overdue Invoice',
+                description: `Invoice ${invoice.invoiceNumber} is critically overdue and requires immediate follow-up`,
+                assignedTo: adminUsers[0]._id,
+                status: 'Completed',
+                completedDate: new Date(),
+                relatedInvoiceId: invoice._id
+              })
+
+              console.log(`Created urgent task for critical invoice: ${invoice.invoiceNumber}`)
+            }
+          } catch (error) {
+            console.error(`Failed to create task for invoice ${invoice._id}:`, error)
           }
         }
         

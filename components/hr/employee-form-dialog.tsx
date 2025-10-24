@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface Employee {
   _id: string
@@ -253,9 +255,12 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
 
   const fetchManagers = async () => {
     try {
-      const { apiClient } = await import("@/lib/api-client")
-      const employees = await apiClient.getEmployees()
-      setManagers(employees.filter((emp: any) => emp.status === 'active'))
+      if (!company?.id) return
+      
+      const response = await api.hr.employees.list({ companyId: company.id })
+      if (response.success && Array.isArray(response.data)) {
+        setManagers(response.data.filter((emp: any) => emp.status === 'active'))
+      }
     } catch (error) {
       console.error('Failed to fetch managers:', error)
     }
@@ -344,23 +349,32 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
       return
     }
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       setIsLoading(true)
       
-      const { apiClient } = await import("@/lib/api-client")
+      const submitData = {
+        companyId: company.id,
+        ...formData,
+        createdBy: company.id,
+      }
 
-      let data
+      let response
       if (employee) {
-        data = await apiClient.updateEmployee(employee._id, formData)
+        response = await api.hr.employees.update(employee._id, submitData)
       } else {
-        data = await apiClient.createEmployee({
-          ...formData,
-          companyId: company?.id || "company-1",
-          createdBy: company?.id || "company-1", // Add createdBy field
-        })
+        response = await api.hr.employees.create(submitData)
       }
       
-      if (data.success) {
+      if (response.success) {
         toast({
           title: "Success",
           description: employee ? "Employee updated successfully" : "Employee added successfully",
@@ -371,7 +385,7 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
       } else {
         toast({
           title: "Error",
-          description: data.error || "Failed to save employee",
+          description: response.error || "Failed to save employee",
           variant: "destructive",
         })
       }

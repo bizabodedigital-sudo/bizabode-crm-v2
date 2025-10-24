@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Trash2 } from "lucide-react"
 import type { Quote, QuoteItem } from "@/lib/types"
-import { useQuotesInvoicesStore } from "@/lib/quotes-invoices-store"
-import { useInventoryStore } from "@/lib/inventory-store"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface QuoteFormDialogProps {
   open: boolean
@@ -26,10 +26,10 @@ interface QuoteFormDialogProps {
 }
 
 export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteFormDialogProps) {
-  const { addQuote, updateQuote } = useQuotesInvoicesStore()
-  const { items, fetchItems } = useInventoryStore()
   const { company } = useAuth()
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [items, setItems] = useState<any[]>([])
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
@@ -45,10 +45,21 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
 
   // Fetch items when dialog opens
   useEffect(() => {
-    if (open && items.length === 0) {
+    if (open && items.length === 0 && company?.id) {
       fetchItems()
     }
-  }, [open])
+  }, [open, company?.id])
+
+  const fetchItems = async () => {
+    try {
+      const response = await api.inventory.items.list({ companyId: company?.id })
+      if (response.success) {
+        setItems(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error)
+    }
+  }
 
   useEffect(() => {
     if (quote) {
@@ -126,9 +137,31 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
       return
     }
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.customerName || !formData.customerEmail || !formData.validUntil) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
     const quoteData = {
-      ...formData,
-      companyId: company?.id || "company-1",
+      companyId: company.id,
+      customerName: formData.customerName,
+      customerEmail: formData.customerEmail,
       quoteNumber: quote?.quoteNumber || `QUO-${Date.now()}`,
       items: lineItems,
       subtotal,
@@ -137,24 +170,32 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
       discount: 0,
       total,
       validUntil: new Date(formData.validUntil),
+      status: formData.status,
+      notes: formData.notes || undefined,
     }
 
     try {
+      let response
       if (quote) {
-        await updateQuote((quote as any)._id || quote.id, quoteData)
-        toast({
-          title: "Success",
-          description: "Quote updated successfully",
-        })
+        response = await api.crm.quotes.update(quote.id, quoteData)
       } else {
-        await addQuote(quoteData)
-        toast({
-          title: "Success",
-          description: "Quote created successfully",
-        })
+        response = await api.crm.quotes.create(quoteData)
       }
 
-      onSuccess()
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: quote ? "Quote updated successfully" : "Quote created successfully",
+        })
+        onOpenChange(false)
+        onSuccess()
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to save quote",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Failed to save quote:", error)
       toast({
@@ -162,6 +203,8 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
         description: "Failed to save quote. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -358,7 +401,16 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSuccess }: QuoteF
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">{quote ? "Update Quote" : "Create Quote"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {quote ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                quote ? "Update Quote" : "Create Quote"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

@@ -13,11 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Trash2 } from "lucide-react"
 import type { Invoice, QuoteItem } from "@/lib/types"
-import { useQuotesInvoicesStore } from "@/lib/quotes-invoices-store"
-import { useInventoryStore } from "@/lib/inventory-store"
 import { useAuth } from "@/lib/auth-context"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface InvoiceFormDialogProps {
   open: boolean
@@ -27,10 +27,10 @@ interface InvoiceFormDialogProps {
 }
 
 export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: InvoiceFormDialogProps) {
-  const { addInvoice, updateInvoice } = useQuotesInvoicesStore()
-  const { items, fetchItems } = useInventoryStore()
   const { company } = useAuth()
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [items, setItems] = useState<any[]>([])
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
@@ -46,10 +46,21 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
 
   // Fetch items when dialog opens
   useEffect(() => {
-    if (open && items.length === 0) {
+    if (open && items.length === 0 && company?.id) {
       fetchItems()
     }
-  }, [open])
+  }, [open, company?.id])
+
+  const fetchItems = async () => {
+    try {
+      const response = await api.inventory.items.list({ companyId: company?.id })
+      if (response.success) {
+        setItems(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error)
+    }
+  }
 
   useEffect(() => {
     if (invoice) {
@@ -127,9 +138,31 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
       return
     }
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.customerName || !formData.customerEmail || !formData.dueDate) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
     const invoiceData = {
-      ...formData,
-      companyId: company?.id || "company-1",
+      companyId: company.id,
+      customerName: formData.customerName,
+      customerEmail: formData.customerEmail,
       invoiceNumber: invoice?.invoiceNumber || `INV-${Date.now()}`,
       items: lineItems,
       subtotal,
@@ -138,25 +171,33 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
       discount: 0,
       total,
       dueDate: new Date(formData.dueDate),
+      status: formData.status,
+      notes: formData.notes || undefined,
       paidAmount: invoice?.paidAmount || 0,
     }
 
     try {
+      let response
       if (invoice) {
-        await updateInvoice((invoice as any)._id || invoice.id, invoiceData)
-        toast({
-          title: "Success",
-          description: "Invoice updated successfully",
-        })
+        response = await api.crm.invoices.update(invoice.id, invoiceData)
       } else {
-        await addInvoice(invoiceData)
-        toast({
-          title: "Success",
-          description: "Invoice created successfully",
-        })
+        response = await api.crm.invoices.create(invoiceData)
       }
 
-      onSuccess()
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: invoice ? "Invoice updated successfully" : "Invoice created successfully",
+        })
+        onOpenChange(false)
+        onSuccess()
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to save invoice",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Failed to save invoice:", error)
       toast({
@@ -164,6 +205,8 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
         description: "Failed to save invoice. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -378,7 +421,16 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSuccess }: In
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">{invoice ? "Update Invoice" : "Create Invoice"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {invoice ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                invoice ? "Update Invoice" : "Create Invoice"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

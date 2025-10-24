@@ -1,251 +1,692 @@
 /**
  * Centralized API Client Configuration
- * 
- * This file contains all API endpoint definitions and typed fetch wrappers
- * to eliminate hardcoded endpoint strings throughout the application.
+ * Provides typed API endpoints and fetch wrapper for consistent API usage
  */
 
 // Base API configuration
-export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-  timeout: 30000,
-  retries: 3,
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
+
+// API Response types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }
 
-// API Endpoint Definitions
+// API Endpoint definitions
 export const API_ENDPOINTS = {
-  // CRM Endpoints
-  crm: {
-    customers: '/api/crm/customers',
-    activities: '/api/crm/activities',
-    salesOrders: '/api/crm/sales-orders',
-    products: '/api/crm/products',
-    promotions: '/api/crm/promotions',
-    documents: '/api/crm/documents',
-    creditLimits: '/api/crm/credit-limits',
-    approvals: '/api/crm/approvals',
-    tasks: '/api/crm/tasks',
-    communicationTemplates: '/api/crm/communication-templates',
-    marketingCampaigns: '/api/crm/marketing-campaigns',
-    customerSatisfaction: '/api/crm/customer-satisfaction',
+  // Authentication
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    PROFILE: '/auth/me',
   },
 
-  // Procurement Endpoints
-  procurement: {
-    suppliers: '/api/procurement/suppliers',
-    purchaseOrders: '/api/procurement/purchase-orders',
-    deliveries: '/api/crm/deliveries',
+  // CRM Endpoints
+  CRM: {
+    LEADS: '/leads',
+    LEAD_BY_ID: (id: string) => `/leads/${id}`,
+    OPPORTUNITIES: '/opportunities',
+    OPPORTUNITY_BY_ID: (id: string) => `/opportunities/${id}`,
+    QUOTES: '/quotes',
+    QUOTE_BY_ID: (id: string) => `/quotes/${id}`,
+    INVOICES: '/crm/invoices',
+    INVOICE_BY_ID: (id: string) => `/crm/invoices/${id}`,
+    CUSTOMERS: '/crm/customers',
+    CUSTOMER_BY_ID: (id: string) => `/crm/customers/${id}`,
+    SALES_ORDERS: '/crm/sales-orders',
+    SALES_ORDER_BY_ID: (id: string) => `/crm/sales-orders/${id}`,
+    ACTIVITIES: '/crm/activities',
+    ACTIVITY_BY_ID: (id: string) => `/crm/activities/${id}`,
+    TASKS: '/crm/tasks',
+    TASK_BY_ID: (id: string) => `/crm/tasks/${id}`,
+    DOCUMENTS: '/crm/documents',
+    DOCUMENT_BY_ID: (id: string) => `/crm/documents/${id}`,
+    PRODUCTS: '/crm/products',
+    PRODUCT_BY_ID: (id: string) => `/crm/products/${id}`,
+    PROMOTIONS: '/crm/promotions',
+    PROMOTION_BY_ID: (id: string) => `/crm/promotions/${id}`,
+    CREDIT_LIMITS: '/crm/credit-limits',
+    CREDIT_LIMIT_BY_ID: (id: string) => `/crm/credit-limits/${id}`,
+    APPROVALS: '/crm/approvals',
+    APPROVAL_BY_ID: (id: string) => `/crm/approvals/${id}`,
+    MARKETING_CAMPAIGNS: '/crm/marketing-campaigns',
+    MARKETING_CAMPAIGN_BY_ID: (id: string) => `/crm/marketing-campaigns/${id}`,
+    CUSTOMER_SATISFACTION: '/crm/customer-satisfaction',
+    COMMUNICATION_TEMPLATES: '/crm/communication-templates',
+    NOTIFICATIONS: '/notifications',
+    NOTIFICATION_BY_ID: (id: string) => `/notifications/${id}`,
   },
 
   // HR Endpoints
-  hr: {
-    reports: '/api/hr/reports',
-    leaves: '/api/hr/leaves',
-    attendance: '/api/hr/attendance',
-    payroll: '/api/hr/payroll',
-    employees: '/api/employees',
-    performance: '/api/hr/performance',
-    training: '/api/hr/training',
+  HR: {
+    EMPLOYEES: '/hr/employees',
+    EMPLOYEE_BY_ID: (id: string) => `/hr/employees/${id}`,
+    ATTENDANCE: '/hr/attendance',
+    ATTENDANCE_BY_ID: (id: string) => `/hr/attendance/${id}`,
+    LEAVE_REQUESTS: '/hr/leave-requests',
+    LEAVE_REQUEST_BY_ID: (id: string) => `/hr/leave-requests/${id}`,
+    PAYROLL: '/hr/payroll',
+    PAYROLL_BY_ID: (id: string) => `/hr/payroll/${id}`,
+    PERFORMANCE_REVIEWS: '/hr/performance-reviews',
+    PERFORMANCE_REVIEW_BY_ID: (id: string) => `/hr/performance-reviews/${id}`,
+    TRAINING: '/hr/training',
+    TRAINING_BY_ID: (id: string) => `/hr/training/${id}`,
+    REPORTS: '/hr/reports',
   },
 
   // Inventory Endpoints
-  inventory: {
-    items: '/api/inventory/items',
-    movements: '/api/inventory/movements',
-    analytics: '/api/inventory/analytics',
-    stockMovements: '/api/inventory/stock-movements',
-    lowStockPurchaseOrder: '/api/inventory/items/low-stock-purchase-order',
-    bulkImport: '/api/inventory/items/bulk-import',
-    exportCsv: '/api/inventory/items/export-csv',
+  INVENTORY: {
+    ITEMS: '/items',
+    ITEM_BY_ID: (id: string) => `/items/${id}`,
+    CATEGORIES: '/inventory/categories',
+    CATEGORY_BY_ID: (id: string) => `/inventory/categories/${id}`,
+    SUPPLIERS: '/inventory/suppliers',
+    SUPPLIER_BY_ID: (id: string) => `/inventory/suppliers/${id}`,
+    STOCK_MOVEMENTS: '/inventory/stock-movements',
+    STOCK_MOVEMENT_BY_ID: (id: string) => `/inventory/stock-movements/${id}`,
+    LOW_STOCK_ALERTS: '/inventory/low-stock-alerts',
+    ANALYTICS: '/inventory/analytics',
   },
 
-  // Quotes & Invoices
-  quotes: {
-    list: '/api/quotes',
-    downloadPdf: (id: string) => `/api/quotes/${id}/download-pdf`,
-    email: (id: string) => `/api/quotes/${id}/email`,
+  // Procurement Endpoints
+  PROCUREMENT: {
+    PURCHASE_ORDERS: '/procurement/purchase-orders',
+    PURCHASE_ORDER_BY_ID: (id: string) => `/procurement/purchase-orders/${id}`,
+    VENDORS: '/procurement/vendors',
+    VENDOR_BY_ID: (id: string) => `/procurement/vendors/${id}`,
+    REQUISITIONS: '/procurement/requisitions',
+    REQUISITION_BY_ID: (id: string) => `/procurement/requisitions/${id}`,
+    CONTRACTS: '/procurement/contracts',
+    CONTRACT_BY_ID: (id: string) => `/procurement/contracts/${id}`,
   },
 
-  invoices: {
-    list: '/api/invoices',
-    downloadPdf: (id: string) => `/api/invoices/${id}/download-pdf`,
-    email: (id: string) => `/api/invoices/${id}/email`,
+  // After Sales Endpoints
+  AFTER_SALES: {
+    TICKETS: '/after-sales/tickets',
+    TICKET_BY_ID: (id: string) => `/after-sales/tickets/${id}`,
+    WARRANTIES: '/after-sales/warranties',
+    WARRANTY_BY_ID: (id: string) => `/after-sales/warranties/${id}`,
+    REPAIRS: '/after-sales/repairs',
+    REPAIR_BY_ID: (id: string) => `/after-sales/repairs/${id}`,
   },
 
-  // Other Endpoints
-  feedback: '/api/feedback',
-  supportTickets: '/api/support-tickets',
-  license: {
-    status: '/api/license/status',
-    activate: '/api/license/activate',
+  // File Management
+  FILES: {
+    UPLOAD: '/files/upload',
+    LIST: '/files',
+    SERVE: (companyId: string, type: string, entityId: string, filename: string) => 
+      `/files/serve/${companyId}/${type}/${entityId}/${filename}`,
+    DELETE: '/files',
   },
-  files: {
-    upload: '/api/files/upload',
-  },
-} as const
 
-// Request configuration types
-export interface ApiRequestConfig {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  headers?: Record<string, string>
-  body?: any
-  params?: Record<string, string | number | boolean>
-  timeout?: number
+  // System Endpoints
+  SYSTEM: {
+    HEALTH: '/health',
+    COMPANY: '/company',
+    USERS: '/users',
+    USER_BY_ID: (id: string) => `/users/${id}`,
+    SETTINGS: '/settings/configuration',
+    NOTIFICATIONS: '/cron/notifications',
+  },
+
+  // License
+  LICENSE: {
+    STATUS: '/license/status',
+    ACTIVATE: '/license/activate',
+    DEACTIVATE: '/license/deactivate',
+  },
+} as const;
+
+// HTTP Methods
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+// Request options
+export interface ApiRequestOptions {
+  method?: HttpMethod;
+  headers?: Record<string, string>;
+  body?: any;
+  params?: Record<string, string | number | boolean>;
+  timeout?: number;
 }
 
-// Response wrapper type
-export interface ApiResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
-  pagination?: {
-    page: number
-    limit: number
-    total: number
-    pages: number
+// API Client class
+export class ApiClient {
+  private baseUrl: string;
+  private defaultHeaders: Record<string, string>;
+
+  constructor(baseUrl: string = API_BASE_URL) {
+    this.baseUrl = baseUrl;
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+    };
   }
-}
 
-// Error types
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public response?: Response
-  ) {
-    super(message)
-    this.name = 'ApiError'
+  /**
+   * Set authentication token
+   */
+  setAuthToken(token: string): void {
+    this.defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
-}
 
-/**
- * Get auth token from localStorage
- */
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('bizabode_token')
-}
+  /**
+   * Remove authentication token
+   */
+  clearAuthToken(): void {
+    delete this.defaultHeaders['Authorization'];
+  }
 
-/**
- * Build query string from parameters
- */
-function buildQueryString(params: Record<string, string | number | boolean>): string {
-  const searchParams = new URLSearchParams()
-  
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      searchParams.append(key, String(value))
+  /**
+   * Refresh authentication token
+   */
+  private async refreshToken(): Promise<boolean> {
+    try {
+      if (typeof window === 'undefined') return false;
+      
+      const storedToken = localStorage.getItem("bizabode_token");
+      if (!storedToken) return false;
+
+      // Temporarily remove the expired token to avoid infinite recursion
+      const originalToken = this.defaultHeaders['Authorization'];
+      delete this.defaultHeaders['Authorization'];
+
+      const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.AUTH.REFRESH}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${storedToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newToken = data.token || data.data?.token;
+        
+        if (newToken) {
+          localStorage.setItem("bizabode_token", newToken);
+          this.setAuthToken(newToken);
+          return true;
+        }
+      }
+
+      // Restore original token if refresh failed
+      if (originalToken) {
+        this.defaultHeaders['Authorization'] = originalToken;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
     }
-  })
-  
-  const queryString = searchParams.toString()
-  return queryString ? `?${queryString}` : ''
+  }
+
+  /**
+   * Build full URL with query parameters
+   */
+  private buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
+    const url = new URL(endpoint, this.baseUrl);
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.append(key, String(value));
+      });
+    }
+    
+    return url.toString();
+  }
+
+  /**
+   * Make HTTP request with error handling
+   */
+  async request<T = any>(
+    endpoint: string,
+    options: ApiRequestOptions = {}
+  ): Promise<ApiResponse<T>> {
+    const {
+      method = 'GET',
+      headers = {},
+      body,
+      params,
+      timeout = 30000,
+    } = options;
+
+    const url = this.buildUrl(endpoint, params);
+    const requestHeaders = { ...this.defaultHeaders, ...headers };
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(url, {
+        method,
+        headers: requestHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle 401 Unauthorized - attempt token refresh
+        if (response.status === 401 && endpoint !== API_ENDPOINTS.AUTH.LOGIN && endpoint !== API_ENDPOINTS.AUTH.REGISTER) {
+          const refreshResult = await this.refreshToken();
+          if (refreshResult) {
+            // Retry the original request with new token
+            return this.request(endpoint, options);
+          } else {
+            // Token refresh failed - redirect to login
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem("bizabode_token")
+              localStorage.removeItem("bizabode_user")
+              localStorage.removeItem("bizabode_company")
+              window.location.href = '/login';
+            }
+          }
+        }
+
+        return {
+          success: false,
+          error: data.error || data.message || `HTTP ${response.status}`,
+        };
+      }
+
+      return {
+        success: true,
+        data: data.data || data,
+        message: data.message,
+        pagination: data.pagination,
+      };
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Request timeout',
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  }
+
+  /**
+   * GET request
+   */
+  async get<T = any>(endpoint: string, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', params });
+  }
+
+  /**
+   * POST request
+   */
+  async post<T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'POST', body, params });
+  }
+
+  /**
+   * PUT request
+   */
+  async put<T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'PUT', body, params });
+  }
+
+  /**
+   * DELETE request
+   */
+  async delete<T = any>(endpoint: string, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'DELETE', params });
+  }
+
+  /**
+   * PATCH request
+   */
+  async patch<T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'PATCH', body, params });
+  }
 }
 
-/**
- * Typed fetch wrapper with auth token injection
- */
-export async function apiRequest<T = any>(
-  endpoint: string,
-  config: ApiRequestConfig = {}
-): Promise<ApiResponse<T>> {
-  const {
-    method = 'GET',
-    headers = {},
-    body,
-    params,
-    timeout = API_CONFIG.timeout,
-  } = config
+// Default API client instance
+export const apiClient = new ApiClient();
 
-  // Build full URL
-  let url = `${API_CONFIG.baseUrl}${endpoint}`
-  if (params) {
-    url += buildQueryString(params)
-  }
-
-  // Prepare headers
-  const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...headers,
-  }
-
-  // Add auth token if available
-  const token = getAuthToken()
-  if (token) {
-    requestHeaders.Authorization = `Bearer ${token}`
-  }
-
-  // Prepare request options
-  const requestOptions: RequestInit = {
-    method,
-    headers: requestHeaders,
-  }
-
-  // Add body for non-GET requests
-  if (body && method !== 'GET') {
-    requestOptions.body = JSON.stringify(body)
-  }
-
-  try {
-    // Create abort controller for timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-    const response = await fetch(url, {
-      ...requestOptions,
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    // Parse response
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new ApiError(
-        data.error || data.message || `HTTP ${response.status}`,
-        response.status,
-        response
-      )
-    }
-
-    return data
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error
-    }
-
-    if (error.name === 'AbortError') {
-      throw new ApiError('Request timeout', 408)
-    }
-
-    throw new ApiError(
-      error.message || 'Network error',
-      0
-    )
-  }
-}
-
-/**
- * Convenience methods for common HTTP verbs
- */
+// Convenience functions for common operations
 export const api = {
-  get: <T = any>(endpoint: string, params?: Record<string, string | number | boolean>) =>
-    apiRequest<T>(endpoint, { method: 'GET', params }),
+  // CRM operations
+  crm: {
+    leads: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.LEADS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.LEAD_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.LEADS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.LEAD_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.LEAD_BY_ID(id)),
+    },
+    opportunities: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.OPPORTUNITIES, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.OPPORTUNITY_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.OPPORTUNITIES, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.OPPORTUNITY_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.OPPORTUNITY_BY_ID(id)),
+    },
+    customers: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.CUSTOMERS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.CUSTOMER_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.CUSTOMERS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.CUSTOMER_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.CUSTOMER_BY_ID(id)),
+    },
+    quotes: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.QUOTES, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.QUOTE_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.QUOTES, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.QUOTE_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.QUOTE_BY_ID(id)),
+      downloadPdf: (id: string) => 
+        apiClient.get(`/api/crm/quotes/${id}/download-pdf`),
+      email: (id: string, data: any) => 
+        apiClient.post(`/api/crm/quotes/${id}/email`, data),
+    },
+    invoices: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.INVOICES, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.INVOICE_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.INVOICES, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.INVOICE_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.INVOICE_BY_ID(id)),
+      downloadPdf: (id: string) => 
+        apiClient.get(`/api/crm/invoices/${id}/download-pdf`),
+      email: (id: string, data: any) => 
+        apiClient.post(`/api/crm/invoices/${id}/email`, data),
+      markPaid: (id: string, data: any) => 
+        apiClient.post(`/api/invoices/${id}/mark-paid`, data),
+    },
+    payments: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get('/api/payments', params),
+      get: (id: string) => 
+        apiClient.get(`/api/payments/${id}`),
+      create: (data: any) => 
+        apiClient.post('/api/payments', data),
+      update: (id: string, data: any) => 
+        apiClient.put(`/api/payments/${id}`, data),
+      delete: (id: string) => 
+        apiClient.delete(`/api/payments/${id}`),
+    },
+    salesOrders: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.SALES_ORDERS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.SALES_ORDER_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.SALES_ORDERS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.SALES_ORDER_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.SALES_ORDER_BY_ID(id)),
+    },
+    activities: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.ACTIVITIES, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.ACTIVITY_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.ACTIVITIES, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.ACTIVITY_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.ACTIVITY_BY_ID(id)),
+    },
+    tasks: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.TASKS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.TASK_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.TASKS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.TASK_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.TASK_BY_ID(id)),
+    },
+    documents: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.DOCUMENTS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.DOCUMENT_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.DOCUMENTS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.DOCUMENT_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.DOCUMENT_BY_ID(id)),
+    },
+    products: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.PRODUCTS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.PRODUCT_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.PRODUCTS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.PRODUCT_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.PRODUCT_BY_ID(id)),
+    },
+    promotions: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.PROMOTIONS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.PROMOTION_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.PROMOTIONS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.PROMOTION_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.PROMOTION_BY_ID(id)),
+    },
+    creditLimits: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.CREDIT_LIMITS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.CREDIT_LIMIT_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.CREDIT_LIMITS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.CREDIT_LIMIT_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.CREDIT_LIMIT_BY_ID(id)),
+    },
+    approvals: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.APPROVALS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.APPROVAL_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.APPROVALS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.APPROVAL_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.APPROVAL_BY_ID(id)),
+    },
+    notifications: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.CRM.NOTIFICATIONS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.CRM.NOTIFICATION_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.CRM.NOTIFICATIONS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.CRM.NOTIFICATION_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.CRM.NOTIFICATION_BY_ID(id)),
+      markAsRead: (notificationIds: string[]) => 
+        apiClient.put(API_ENDPOINTS.CRM.NOTIFICATIONS, {
+          notificationIds,
+          action: 'markAsRead'
+        }),
+      markAsUnread: (notificationIds: string[]) => 
+        apiClient.put(API_ENDPOINTS.CRM.NOTIFICATIONS, {
+          notificationIds,
+          action: 'markAsUnread'
+        }),
+      deleteMultiple: (notificationIds: string[]) => 
+        apiClient.put(API_ENDPOINTS.CRM.NOTIFICATIONS, {
+          notificationIds,
+          action: 'delete'
+        }),
+    },
+  },
 
-  post: <T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>) =>
-    apiRequest<T>(endpoint, { method: 'POST', body, params }),
+  // HR operations
+  hr: {
+    employees: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.HR.EMPLOYEES, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.HR.EMPLOYEE_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.HR.EMPLOYEES, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.HR.EMPLOYEE_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.HR.EMPLOYEE_BY_ID(id)),
+    },
+    attendance: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.HR.ATTENDANCE, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.HR.ATTENDANCE_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.HR.ATTENDANCE, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.HR.ATTENDANCE_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.HR.ATTENDANCE_BY_ID(id)),
+    },
+    leaveRequests: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.HR.LEAVE_REQUESTS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.HR.LEAVE_REQUEST_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.HR.LEAVE_REQUESTS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.HR.LEAVE_REQUEST_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.HR.LEAVE_REQUEST_BY_ID(id)),
+    },
+    payroll: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.HR.PAYROLL, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.HR.PAYROLL_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.HR.PAYROLL, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.HR.PAYROLL_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.HR.PAYROLL_BY_ID(id)),
+    },
+    reports: {
+      get: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.HR.REPORTS, params),
+    },
+  },
 
-  put: <T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>) =>
-    apiRequest<T>(endpoint, { method: 'PUT', body, params }),
+  // Inventory operations
+  inventory: {
+    items: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.INVENTORY.ITEMS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.INVENTORY.ITEM_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.INVENTORY.ITEMS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.INVENTORY.ITEM_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.INVENTORY.ITEM_BY_ID(id)),
+      exportCsv: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get('/inventory/items/export-csv', params),
+    },
+    analytics: {
+      get: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.INVENTORY.ANALYTICS, params),
+    },
+  },
 
-  patch: <T = any>(endpoint: string, body?: any, params?: Record<string, string | number | boolean>) =>
-    apiRequest<T>(endpoint, { method: 'PATCH', body, params }),
+  // System operations
+  system: {
+    health: () => 
+      apiClient.get(API_ENDPOINTS.SYSTEM.HEALTH),
+    company: {
+      get: () => 
+        apiClient.get(API_ENDPOINTS.SYSTEM.COMPANY),
+      update: (data: any) => 
+        apiClient.put(API_ENDPOINTS.SYSTEM.COMPANY, data),
+    },
+    users: {
+      list: (params?: Record<string, string | number | boolean>) => 
+        apiClient.get(API_ENDPOINTS.SYSTEM.USERS, params),
+      get: (id: string) => 
+        apiClient.get(API_ENDPOINTS.SYSTEM.USER_BY_ID(id)),
+      create: (data: any) => 
+        apiClient.post(API_ENDPOINTS.SYSTEM.USERS, data),
+      update: (id: string, data: any) => 
+        apiClient.put(API_ENDPOINTS.SYSTEM.USER_BY_ID(id), data),
+      delete: (id: string) => 
+        apiClient.delete(API_ENDPOINTS.SYSTEM.USER_BY_ID(id)),
+    },
+  },
 
-  delete: <T = any>(endpoint: string, params?: Record<string, string | number | boolean>) =>
-    apiRequest<T>(endpoint, { method: 'DELETE', params }),
-}
+  // License operations
+  license: {
+    getStatus: () => 
+      apiClient.get(API_ENDPOINTS.LICENSE.STATUS),
+    activate: (data: { licenseKey: string }) => 
+      apiClient.post(API_ENDPOINTS.LICENSE.ACTIVATE, data),
+    deactivate: () => 
+      apiClient.post(API_ENDPOINTS.LICENSE.DEACTIVATE),
+  },
+};
 
-// Export endpoints for direct access
-export { API_ENDPOINTS as endpoints }
+export default apiClient;
+
+// Export endpoints for backward compatibility
+export { API_ENDPOINTS as endpoints };

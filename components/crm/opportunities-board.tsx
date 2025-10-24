@@ -4,11 +4,14 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, DollarSign, Calendar, Loader2 } from "lucide-react"
+import { Plus, Edit, DollarSign, Calendar } from "lucide-react"
 import type { Opportunity } from "@/lib/types"
 import { useCRMStore } from "@/lib/crm-store"
 import { OpportunityFormDialog } from "./opportunity-form-dialog"
-import { format } from "date-fns"
+import Loading from "@/components/shared/Loading"
+import EmptyState from "@/components/shared/EmptyState"
+import StatusBadge from "@/components/shared/StatusBadge"
+import { formatCurrency, formatDate } from "@/lib/utils/formatters"
 
 const stages = [
   { id: "prospecting", label: "Prospecting", color: "bg-blue-500" },
@@ -38,11 +41,7 @@ export function OpportunitiesBoard() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <Loading text="Loading opportunities..." />
   }
 
   return (
@@ -67,7 +66,7 @@ export function OpportunitiesBoard() {
                   <h3 className="font-semibold">{stage.label}</h3>
                   <Badge variant="secondary">{stageOpportunities.length}</Badge>
                 </div>
-                <span className="text-sm font-medium text-muted-foreground">${totalValue.toLocaleString()}</span>
+                <span className="text-sm font-medium text-muted-foreground">{formatCurrency(totalValue)}</span>
               </div>
 
               <div className="space-y-2">
@@ -89,14 +88,14 @@ export function OpportunitiesBoard() {
                     <CardContent className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-semibold">${opp.value.toLocaleString()}</span>
+                        <span className="font-semibold">{formatCurrency(opp.value)}</span>
                         <Badge variant="outline" className="ml-auto">
                           {opp.probability}%
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(opp.expectedCloseDate), 'MMM dd, yyyy')}</span>
+                        <span>{formatDate(opp.expectedCloseDate)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">{opp.customerName}</p>
                     </CardContent>

@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Lead } from "@/lib/types"
-import { useCRMStore } from "@/lib/crm-store"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface LeadFormDialogProps {
   open: boolean
@@ -22,9 +23,9 @@ interface LeadFormDialogProps {
 }
 
 export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadFormDialogProps) {
-  const { addLead, updateLead } = useCRMStore()
   const { company, user } = useAuth()
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -81,26 +82,67 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.name || !formData.email || !formData.phone || !formData.company || !formData.source) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      if (lead) {
-        await updateLead((lead as any)._id || lead.id, formData)
-        toast({
-          title: "Success",
-          description: "Lead updated successfully",
-        })
-      } else {
-        await addLead({
-          ...formData,
-          companyId: company?.id || "company-1",
-          assignedTo: user?.id,
-        })
-        toast({
-          title: "Success",
-          description: "Lead added successfully",
-        })
+      const submitData = {
+        companyId: company.id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        source: formData.source,
+        status: formData.status,
+        notes: formData.notes || undefined,
+        category: formData.category || undefined,
+        productInterest: formData.productInterest.length > 0 ? formData.productInterest : undefined,
+        monthlyVolume: formData.monthlyVolume || undefined,
+        territory: formData.territory || undefined,
+        leadScore: formData.leadScore || undefined,
+        customerType: formData.customerType || undefined,
+        assignedTo: user?.id || undefined,
       }
 
-      onSuccess()
+      let response
+      if (lead) {
+        response = await api.crm.leads.update(lead.id, submitData)
+      } else {
+        response = await api.crm.leads.create(submitData)
+      }
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: lead ? "Lead updated successfully" : "Lead created successfully",
+        })
+        onOpenChange(false)
+        onSuccess()
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to save lead",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Failed to save lead:", error)
       toast({
@@ -108,6 +150,8 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
         description: "Failed to save lead. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -284,7 +328,16 @@ export function LeadFormDialog({ open, onOpenChange, lead, onSuccess }: LeadForm
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">{lead ? "Update Lead" : "Add Lead"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {lead ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                lead ? "Update Lead" : "Add Lead"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

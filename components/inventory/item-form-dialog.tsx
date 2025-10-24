@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Item } from "@/lib/types"
-import { useInventoryStore } from "@/lib/inventory-store"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface ItemFormDialogProps {
   open: boolean
@@ -22,9 +23,9 @@ interface ItemFormDialogProps {
 }
 
 export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemFormDialogProps) {
-  const { addItem, updateItem } = useInventoryStore()
   const { company } = useAuth()
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     sku: "",
     name: "",
@@ -65,25 +66,54 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.sku || !formData.name || !formData.category) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      if (item) {
-        await updateItem((item as any)._id || item.id, formData)
-        toast({
-          title: "Success",
-          description: "Item updated successfully",
-        })
-      } else {
-        await addItem({
-          ...formData,
-          companyId: company?.id || "company-1",
-        })
-        toast({
-          title: "Success",
-          description: "Item added successfully",
-        })
+      const submitData = {
+        companyId: company.id,
+        ...formData,
       }
 
-      onSuccess()
+      let response
+      if (item) {
+        response = await api.inventory.items.update(item.id, submitData)
+      } else {
+        response = await api.inventory.items.create(submitData)
+      }
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: item ? "Item updated successfully" : "Item created successfully",
+        })
+        onOpenChange(false)
+        onSuccess()
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to save item",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Failed to save item:", error)
       toast({
@@ -91,6 +121,8 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
         description: "Failed to save item. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -197,7 +229,16 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">{item ? "Update Item" : "Add Item"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {item ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                item ? "Update Item" : "Add Item"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

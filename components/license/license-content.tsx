@@ -10,6 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Key, CheckCircle, AlertCircle, Calendar, Users, Crown, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/lib/auth-context"
+import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
 
 interface LicenseData {
   key: string
@@ -23,6 +26,8 @@ interface LicenseData {
 }
 
 export function LicenseContent() {
+  const { user, company, isAuthenticated } = useAuth()
+  const { toast } = useToast()
   const [licenseKey, setLicenseKey] = useState("")
   const [isActivating, setIsActivating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -31,32 +36,27 @@ export function LicenseContent() {
 
   // Fetch real license data from API
   useEffect(() => {
-    fetchLicenseData()
-  }, [])
+    if (isAuthenticated && user) {
+      fetchLicenseData()
+    }
+  }, [isAuthenticated, user])
 
   const fetchLicenseData = async () => {
     try {
       setIsLoading(true)
-      const token = localStorage.getItem('token')
+      setError("")
       
-      if (!token) {
+      if (!isAuthenticated || !user) {
         setError('Please log in to view license information')
         return
       }
 
-      const response = await fetch('/api/license/status', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await api.license.getStatus()
 
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentLicense(data)
+      if (response.success && response.data) {
+        setCurrentLicense(response.data)
       } else {
-        const errorData = await response.json()
-        setError(errorData.error || 'Failed to fetch license data')
+        setError(response.error || 'Failed to fetch license data')
       }
     } catch (error) {
       console.error('Error fetching license data:', error)
@@ -73,41 +73,47 @@ export function LicenseContent() {
     setError("")
 
     try {
-      const token = localStorage.getItem('token')
-      
-      if (!token) {
+      if (!isAuthenticated || !user) {
         setError('Please log in to activate license')
         return
       }
 
-      const response = await fetch('/api/license/activate', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ licenseKey })
-      })
+      const response = await api.license.activate({ licenseKey })
 
-      if (response.ok) {
-        const data = await response.json()
-        setCurrentLicense(data)
+      if (response.success && response.data) {
+        setCurrentLicense(response.data)
         setLicenseKey("")
+        toast({
+          title: "Success",
+          description: "License activated successfully"
+        })
         // Refresh license data
         await fetchLicenseData()
       } else {
-        const errorData = await response.json()
-        setError(errorData.error || 'License activation failed')
+        const errorMessage = response.error || 'License activation failed'
+        setError(errorMessage)
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
+        })
       }
     } catch (error) {
       console.error('Error activating license:', error)
-      setError('License activation failed')
+      const errorMessage = 'License activation failed'
+      setError(errorMessage)
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
     } finally {
       setIsActivating(false)
     }
   }
 
-  if (isLoading) {
+  // Show loading state while checking authentication or fetching license data
+  if (!isAuthenticated || !user || isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -121,7 +127,9 @@ export function LicenseContent() {
         </div>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading license information...</span>
+          <span className="ml-2">
+            {!isAuthenticated ? 'Please log in to continue...' : 'Loading license information...'}
+          </span>
         </div>
       </div>
     )

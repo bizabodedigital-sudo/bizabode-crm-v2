@@ -10,6 +10,12 @@ import type { Lead } from "@/lib/types"
 import { useCRMStore } from "@/lib/crm-store"
 import { LeadFormDialog } from "./lead-form-dialog"
 import { ConvertLeadDialog } from "./convert-lead-dialog"
+import StatusBadge from "@/components/shared/StatusBadge"
+import SearchInput from "@/components/shared/SearchInput"
+import Loading from "@/components/shared/Loading"
+import EmptyState from "@/components/shared/EmptyState"
+import { formatDate, formatCurrency } from "@/lib/utils/formatters"
+import { filterBySearch } from "@/lib/utils/filters"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,13 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-const statusColors = {
-  new: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  contacted: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-  qualified: "bg-green-500/10 text-green-700 dark:text-green-400",
-  unqualified: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
-}
 
 export function LeadsTable() {
   const { leads, deleteLead, fetchLeads, isLoading } = useCRMStore()
@@ -41,12 +40,7 @@ export function LeadsTable() {
     fetchLeads()
   }, [])
 
-  const filteredLeads = leads.filter(
-    (lead) =>
-      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.company.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredLeads = filterBySearch(leads, searchQuery, ['name', 'email', 'company'])
 
   const handleDelete = () => {
     if (deletingLead) {
@@ -58,15 +52,11 @@ export function LeadsTable() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search leads by name, email, or company..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          placeholder="Search leads by name, email, or company..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Lead
@@ -74,9 +64,16 @@ export function LeadsTable() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <Loading text="Loading leads..." />
+      ) : filteredLeads.length === 0 ? (
+        <EmptyState
+          title="No leads found"
+          description="Get started by adding your first lead"
+          action={{
+            label: "Add Lead",
+            onClick: () => setIsAddDialogOpen(true)
+          }}
+        />
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -94,14 +91,7 @@ export function LeadsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredLeads.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                    No leads found
-                  </TableCell>
-                </TableRow>
-              ) : (
-              filteredLeads.map((lead) => (
+              {filteredLeads.map((lead) => (
                 <TableRow key={(lead as any)._id || lead.id}>
                   <TableCell className="font-medium">{lead.name}</TableCell>
                   <TableCell>{lead.company}</TableCell>
@@ -109,17 +99,13 @@ export function LeadsTable() {
                   <TableCell>{lead.phone}</TableCell>
                   <TableCell>
                     {lead.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {lead.category}
-                      </Badge>
+                      <StatusBadge value={lead.category} type="category" />
                     )}
                   </TableCell>
                   <TableCell>{lead.territory || '-'}</TableCell>
                   <TableCell>{lead.source}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColors[lead.status]}>
-                      {lead.status}
-                    </Badge>
+                    <StatusBadge value={lead.status} type="status" />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -137,11 +123,10 @@ export function LeadsTable() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       <LeadFormDialog

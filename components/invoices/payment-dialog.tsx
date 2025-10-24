@@ -60,9 +60,18 @@ export function PaymentDialog({ open, onOpenChange, invoice, onSuccess }: Paymen
     }
 
     try {
+      if (!company?.id) {
+        toast({
+          title: "Error",
+          description: "Company information is missing. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
+
       await addPayment({
         ...formData,
-        companyId: company?.id || "company-1",
+        companyId: company.id,
         invoiceId: (invoice as any)._id || invoice.id,
         reference: formData.reference || `PAY-${Date.now()}`, // Auto-generate if empty
       })

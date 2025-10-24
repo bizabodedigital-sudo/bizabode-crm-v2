@@ -13,6 +13,8 @@ import { formatDate } from "@/lib/utils/formatters"
 import { getTypeColor, getStatusColor, getOutcomeColor } from "@/lib/utils/status-colors"
 import SearchInput from "@/components/shared/SearchInput"
 import Loading from "@/components/shared/Loading"
+import { ActivityFormDialog } from "./activity-form-dialog"
+import { QuickActivityLogger } from "./quick-activity-logger"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +50,7 @@ export function ActivitiesTable() {
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null)
   const [deletingActivity, setDeletingActivity] = useState<Activity | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isQuickLoggerOpen, setIsQuickLoggerOpen] = useState(false)
   const { toast } = useToast()
 
   // Fetch activities from API
@@ -132,10 +135,16 @@ export function ActivitiesTable() {
           value={searchQuery}
           onChange={setSearchQuery}
         />
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Log Activity
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsQuickLoggerOpen(true)} variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Quick Log
+          </Button>
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Log Activity
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -236,6 +245,28 @@ export function ActivitiesTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Activity Form Dialog */}
+      <ActivityFormDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSuccess={fetchActivities}
+      />
+
+      {/* Quick Activity Logger */}
+      <QuickActivityLogger
+        open={isQuickLoggerOpen}
+        onOpenChange={setIsQuickLoggerOpen}
+        onSuccess={fetchActivities}
+      />
+
+      {/* Edit Activity Dialog */}
+      <ActivityFormDialog
+        open={!!editingActivity}
+        onOpenChange={(open) => !open && setEditingActivity(null)}
+        activity={editingActivity}
+        onSuccess={fetchActivities}
+      />
     </div>
   )
 }

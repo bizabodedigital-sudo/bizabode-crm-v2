@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const { items, fetchItems } = useInventoryStore()
   const { leads, opportunities, fetchLeads, fetchOpportunities } = useCRMStore()
   const { invoices, quotes, fetchInvoices, fetchQuotes } = useQuotesInvoicesStore()
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, company, isAuthenticated, isLoading: authLoading } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -178,7 +178,7 @@ export default function DashboardPage() {
         {/* Right Column */}
         <div className="space-y-6">
           <QuickActions />
-          {canViewCRM && <TasksWidget companyId={user?.companyId || ''} userId={user?.id} />}
+          {canViewCRM && company?.id && <TasksWidget companyId={company.id} userId={user?.id} />}
           <NotificationsPanel />
           {isAdmin && <AdminPanel />}
         </div>

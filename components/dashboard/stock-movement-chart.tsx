@@ -8,15 +8,8 @@ import { Package, TrendingUp, TrendingDown } from "lucide-react"
 export function StockMovementChart() {
   const { items } = useInventoryStore()
 
-  // Mock data for stock movements (in real app, this would come from stock movements API)
-  const stockMovements = [
-    { month: "Jan", stockIn: 150, stockOut: 120 },
-    { month: "Feb", stockIn: 180, stockOut: 140 },
-    { month: "Mar", stockIn: 200, stockOut: 160 },
-    { month: "Apr", stockIn: 170, stockOut: 180 },
-    { month: "May", stockIn: 190, stockOut: 170 },
-    { month: "Jun", stockIn: 220, stockOut: 190 },
-  ]
+  // TODO: Replace with real stock movements data from API
+  const stockMovements = []
 
   const totalStockIn = stockMovements.reduce((sum, item) => sum + item.stockIn, 0)
   const totalStockOut = stockMovements.reduce((sum, item) => sum + item.stockOut, 0)

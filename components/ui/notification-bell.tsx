@@ -28,40 +28,10 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // Mock notifications for now - will be replaced with real API calls
+  // TODO: Replace with real notifications from API
   useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: "1",
-        type: "low_stock",
-        title: "Low Stock Alert",
-        message: "5 items are running low on stock",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        read: false,
-        priority: "high"
-      },
-      {
-        id: "2",
-        type: "overdue_invoice",
-        title: "Overdue Invoice",
-        message: "Invoice INV-2024-0001 is 5 days overdue",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        read: false,
-        priority: "high"
-      },
-      {
-        id: "3",
-        type: "critical_item",
-        title: "Critical Item Alert",
-        message: "Container 28OZ is out of stock",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-        read: true,
-        priority: "medium"
-      }
-    ]
-    
-    setNotifications(mockNotifications)
-    setUnreadCount(mockNotifications.filter(n => !n.read).length)
+    setNotifications([])
+    setUnreadCount(0)
   }, [])
 
   const getNotificationIcon = (type: Notification["type"]) => {

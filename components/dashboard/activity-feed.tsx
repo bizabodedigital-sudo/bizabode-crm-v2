@@ -3,48 +3,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-const activities = [
-  {
-    id: 1,
-    user: "John Smith",
-    action: "created a new quote",
-    target: "QT-2024-001",
-    time: "2 hours ago",
-    type: "quote",
-  },
-  {
-    id: 2,
-    user: "Sarah Johnson",
-    action: "converted lead to opportunity",
-    target: "TechCorp Deal",
-    time: "4 hours ago",
-    type: "opportunity",
-  },
-  {
-    id: 3,
-    user: "Mike Davis",
-    action: "marked invoice as paid",
-    target: "INV-2024-001",
-    time: "5 hours ago",
-    type: "payment",
-  },
-  {
-    id: 4,
-    user: "Emily Brown",
-    action: "added new inventory item",
-    target: "Wireless Mouse",
-    time: "6 hours ago",
-    type: "inventory",
-  },
-  {
-    id: 5,
-    user: "Admin User",
-    action: "confirmed delivery",
-    target: "DEL-2024-001",
-    time: "1 day ago",
-    type: "delivery",
-  },
-]
+// TODO: Replace with real activities data from API
+const activities = []
 
 const typeColors: Record<string, string> = {
   quote: "bg-blue-500/10 text-blue-700 dark:text-blue-400",

@@ -2,6 +2,7 @@ import cron from 'node-cron'
 import { connectDB } from '../lib/db'
 import Company from '../lib/models/Company'
 import User from '../lib/models/User'
+import { EmailService } from '../lib/services/email-service'
 
 /**
  * Daily license check - runs at 10 AM every day
@@ -96,7 +97,7 @@ export function startLicenseCheck() {
           </div>
         `
         
-        // Send email to all admin users
+        // Send email to all admin users using centralized email service
         for (const user of adminUsers) {
           try {
             await EmailService.sendMail({

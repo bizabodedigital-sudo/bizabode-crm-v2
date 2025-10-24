@@ -18,36 +18,8 @@ const paymentMethodColors = {
 export function PaymentsTable() {
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Mock data - will be replaced with API
-  const payments = [
-    {
-      id: "1",
-      invoiceNumber: "INV-2024-001",
-      customerName: "John Smith",
-      amount: 6598.90,
-      method: "bank-transfer" as const,
-      reference: "TXN-12345",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "2",
-      invoiceNumber: "INV-2024-002",
-      customerName: "Maria Garcia",
-      amount: 3500.00,
-      method: "card" as const,
-      reference: "CARD-67890",
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "3",
-      invoiceNumber: "INV-2024-003",
-      customerName: "David Chen",
-      amount: 12000.00,
-      method: "cash" as const,
-      reference: "CASH-001",
-      createdAt: new Date(),
-    },
-  ]
+  // TODO: Replace with real payments data from API
+  const payments = []
 
   const filteredPayments = payments.filter(
     (payment) =>
@@ -91,8 +63,14 @@ export function PaymentsTable() {
           <TableBody>
             {filteredPayments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  No payments found
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-12 w-12 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                      <span className="text-2xl">💳</span>
+                    </div>
+                    <p className="text-lg font-medium">No payments found</p>
+                    <p className="text-sm">Payment records will appear here when customers make payments</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

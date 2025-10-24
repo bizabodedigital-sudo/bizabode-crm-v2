@@ -19,39 +19,8 @@ const statusColors = {
 export function DeliveriesTable() {
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Mock data for now - will be replaced with API
-  const deliveries = [
-    {
-      id: "1",
-      deliveryNumber: "DEL-2024-001",
-      customerName: "John Smith",
-      address: "123 Main St, Kingston",
-      scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      status: "scheduled" as const,
-      driverName: "Mike Johnson",
-      qrCode: "DEL-123ABC",
-    },
-    {
-      id: "2",
-      deliveryNumber: "DEL-2024-002",
-      customerName: "Maria Garcia",
-      address: "456 Oak Ave, Montego Bay",
-      scheduledDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-      status: "in-transit" as const,
-      driverName: "Carlos Rodriguez",
-      qrCode: "DEL-456DEF",
-    },
-    {
-      id: "3",
-      deliveryNumber: "DEL-2024-003",
-      customerName: "David Chen",
-      address: "789 Pine Rd, Ocho Rios",
-      scheduledDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      status: "delivered" as const,
-      driverName: "James Brown",
-      qrCode: "DEL-789GHI",
-    },
-  ]
+  // TODO: Replace with real deliveries data from API
+  const deliveries = []
 
   const filteredDeliveries = deliveries.filter(
     (delivery) =>
@@ -94,8 +63,12 @@ export function DeliveriesTable() {
           <TableBody>
             {filteredDeliveries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  No deliveries found
+                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <QrCode className="h-12 w-12 text-muted-foreground/50" />
+                    <p className="text-lg font-medium">No deliveries found</p>
+                    <p className="text-sm">Create your first delivery to get started</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { User, AuthState } from "./types"
-import { demoUsers, demoCompany } from "./mock-data"
+import { apiClient, API_ENDPOINTS } from "./api-client-config"
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>
@@ -22,10 +22,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for stored auth on mount
+    const storedToken = localStorage.getItem("bizabode_token")
     const storedUser = localStorage.getItem("bizabode_user")
     const storedCompany = localStorage.getItem("bizabode_company")
 
-    if (storedUser && storedCompany) {
+    if (storedToken && storedUser && storedCompany) {
+      // Set token in API client
+      apiClient.setAuthToken(storedToken)
+      
       setAuthState({
         user: JSON.parse(storedUser),
         company: JSON.parse(storedCompany),
@@ -39,15 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const { apiClient } = await import("./api-client")
-      const response = await apiClient.login(email, password)
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
+      })
 
-      const { token, user, company } = response
+      if (!response.success) {
+        throw new Error(response.error || "Login failed")
+      }
+
+      const { token, user, company } = response.data
 
       // Store token and user data
       localStorage.setItem("bizabode_token", token)
       localStorage.setItem("bizabode_user", JSON.stringify(user))
       localStorage.setItem("bizabode_company", JSON.stringify(company))
+
+      // Set token in API client for future requests
+      apiClient.setAuthToken(token)
 
       setAuthState({
         user,
@@ -68,6 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("bizabode_user")
     localStorage.removeItem("bizabode_company")
 
+    // Clear token from API client
+    apiClient.clearAuthToken()
+
     setAuthState({
       user: null,
       company: null,
@@ -84,8 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     licenseKey?: string
   ): Promise<boolean> => {
     try {
-      const { apiClient } = await import("./api-client")
-      const response = await apiClient.register({
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, {
         email,
         password,
         name,
@@ -93,12 +108,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         licenseKey: licenseKey || "DEMO-LICENSE-KEY",
       })
 
-      const { token, user, company } = response
+      if (!response.success) {
+        throw new Error(response.error || "Registration failed")
+      }
+
+      const { token, user, company } = response.data
 
       // Store token and user data
       localStorage.setItem("bizabode_token", token)
       localStorage.setItem("bizabode_user", JSON.stringify(user))
       localStorage.setItem("bizabode_company", JSON.stringify(company))
+
+      // Set token in API client for future requests
+      apiClient.setAuthToken(token)
 
       setAuthState({
         user,

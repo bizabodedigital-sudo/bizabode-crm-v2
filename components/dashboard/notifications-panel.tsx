@@ -22,10 +22,10 @@ export function NotificationsPanel() {
     new Date(inv.dueDate) < new Date()
   )
   
-  // Mock license expiry (in real app, this would come from company data)
-  const licenseExpiryDate = new Date()
-  licenseExpiryDate.setDate(licenseExpiryDate.getDate() + 30) // 30 days from now
-  const isLicenseExpiringSoon = licenseExpiryDate.getTime() - new Date().getTime() < 30 * 24 * 60 * 60 * 1000
+  // Get license expiry from company data
+  const licenseExpiryDate = company?.licenseExpiry ? new Date(company.licenseExpiry) : null
+  const isLicenseExpiringSoon = licenseExpiryDate ? 
+    (licenseExpiryDate.getTime() - new Date().getTime() < 30 * 24 * 60 * 60 * 1000) : false
 
   const notifications = [
     {

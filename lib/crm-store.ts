@@ -2,7 +2,7 @@
 
 import { create } from "zustand"
 import type { Lead, Opportunity } from "./types"
-import { apiClient } from "./api-client"
+import { api } from "./api-client-config"
 
 interface CRMStore {
   leads: Lead[]
@@ -29,33 +29,44 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
   fetchLeads: async () => {
     try {
       set({ isLoading: true })
-      const response = await apiClient.getLeads({ limit: 1000 })
-      set({ leads: response.leads || [], isLoading: false })
+      const response = await api.crm.leads.list({ limit: 1000 })
+      if (response.success) {
+        set({ leads: response.data?.leads || [], isLoading: false })
+      } else {
+        console.error("Failed to fetch leads:", response.error)
+        set({ isLoading: false })
+      }
     } catch (error) {
       console.error("Failed to fetch leads:", error)
       set({ isLoading: false })
-      // Don't throw the error to prevent unhandled promise rejections
-      // The API client will handle authentication errors
     }
   },
 
   fetchOpportunities: async () => {
     try {
       set({ isLoading: true })
-      const response = await apiClient.getOpportunities({ limit: 1000 })
-      set({ opportunities: response.opportunities || [], isLoading: false })
+      const response = await api.crm.opportunities.list({ limit: 1000 })
+      if (response.success) {
+        set({ opportunities: response.data?.opportunities || [], isLoading: false })
+      } else {
+        console.error("Failed to fetch opportunities:", response.error)
+        set({ isLoading: false })
+      }
     } catch (error) {
       console.error("Failed to fetch opportunities:", error)
       set({ isLoading: false })
-      // Don't throw the error to prevent unhandled promise rejections
-      // The API client will handle authentication errors
     }
   },
 
   addLead: async (lead) => {
     try {
-      const newLead = await apiClient.createLead(lead)
-      set((state) => ({ leads: [...state.leads, newLead] }))
+      const response = await api.crm.leads.create(lead)
+      if (response.success) {
+        set((state) => ({ leads: [...state.leads, response.data] }))
+      } else {
+        console.error("Failed to create lead:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to add lead:", error)
       throw error
@@ -64,10 +75,15 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   updateLead: async (id, updates) => {
     try {
-      const updatedLead = await apiClient.updateLead(id, updates)
-      set((state) => ({
-        leads: state.leads.map((lead) => (lead.id === id || (lead as any)._id === id ? updatedLead : lead)),
-      }))
+      const response = await api.crm.leads.update(id, updates)
+      if (response.success) {
+        set((state) => ({
+          leads: state.leads.map((lead) => (lead.id === id || (lead as any)._id === id ? response.data : lead)),
+        }))
+      } else {
+        console.error("Failed to update lead:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to update lead:", error)
       throw error
@@ -76,8 +92,13 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   deleteLead: async (id) => {
     try {
-      await apiClient.deleteLead(id)
-      set((state) => ({ leads: state.leads.filter((lead) => lead.id !== id && (lead as any)._id !== id) }))
+      const response = await api.crm.leads.delete(id)
+      if (response.success) {
+        set((state) => ({ leads: state.leads.filter((lead) => lead.id !== id && (lead as any)._id !== id) }))
+      } else {
+        console.error("Failed to delete lead:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to delete lead:", error)
       throw error
@@ -86,15 +107,26 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   convertLeadToOpportunity: async (leadId, opportunityData) => {
     try {
-      const response = await apiClient.convertLeadToOpportunity(leadId, opportunityData)
-      const { opportunity, lead } = response
-
-      set((state) => ({
-        opportunities: [...state.opportunities, opportunity],
-        leads: state.leads.map((l) => (l.id === leadId || (l as any)._id === leadId ? lead : l)),
-      }))
-
-      return opportunity._id || opportunity.id
+      // This is a custom operation that might need to be handled differently
+      // For now, we'll create the opportunity and update the lead status
+      const response = await api.crm.opportunities.create(opportunityData)
+      if (response.success) {
+        const opportunity = response.data
+        // Update the lead status to 'converted'
+        const leadResponse = await api.crm.leads.update(leadId, { status: 'converted' })
+        
+        if (leadResponse.success) {
+          set((state) => ({
+            opportunities: [...state.opportunities, opportunity],
+            leads: state.leads.map((l) => (l.id === leadId || (l as any)._id === leadId ? leadResponse.data : l)),
+          }))
+          return opportunity._id || opportunity.id
+        } else {
+          throw new Error(leadResponse.error)
+        }
+      } else {
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to convert lead:", error)
       throw error
@@ -103,8 +135,13 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   addOpportunity: async (opportunity) => {
     try {
-      const newOpportunity = await apiClient.createOpportunity(opportunity)
-      set((state) => ({ opportunities: [...state.opportunities, newOpportunity] }))
+      const response = await api.crm.opportunities.create(opportunity)
+      if (response.success) {
+        set((state) => ({ opportunities: [...state.opportunities, response.data] }))
+      } else {
+        console.error("Failed to create opportunity:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to add opportunity:", error)
       throw error
@@ -113,12 +150,17 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   updateOpportunity: async (id, updates) => {
     try {
-      const updatedOpportunity = await apiClient.updateOpportunity(id, updates)
-      set((state) => ({
-        opportunities: state.opportunities.map((opp) =>
-          opp.id === id || (opp as any)._id === id ? updatedOpportunity : opp
-        ),
-      }))
+      const response = await api.crm.opportunities.update(id, updates)
+      if (response.success) {
+        set((state) => ({
+          opportunities: state.opportunities.map((opp) =>
+            opp.id === id || (opp as any)._id === id ? response.data : opp
+          ),
+        }))
+      } else {
+        console.error("Failed to update opportunity:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to update opportunity:", error)
       throw error
@@ -127,8 +169,13 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   deleteOpportunity: async (id) => {
     try {
-      await apiClient.deleteOpportunity(id)
-      set((state) => ({ opportunities: state.opportunities.filter((opp) => opp.id !== id && (opp as any)._id !== id) }))
+      const response = await api.crm.opportunities.delete(id)
+      if (response.success) {
+        set((state) => ({ opportunities: state.opportunities.filter((opp) => opp.id !== id && (opp as any)._id !== id) }))
+      } else {
+        console.error("Failed to delete opportunity:", response.error)
+        throw new Error(response.error)
+      }
     } catch (error) {
       console.error("Failed to delete opportunity:", error)
       throw error

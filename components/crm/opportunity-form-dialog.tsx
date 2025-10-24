@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Opportunity } from "@/lib/types"
-import { useCRMStore } from "@/lib/crm-store"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface OpportunityFormDialogProps {
   open: boolean
@@ -22,9 +23,9 @@ interface OpportunityFormDialogProps {
 }
 
 export function OpportunityFormDialog({ open, onOpenChange, opportunity, onSuccess }: OpportunityFormDialogProps) {
-  const { addOpportunity, updateOpportunity } = useCRMStore()
   const { company, user } = useAuth()
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     customerName: "",
@@ -68,30 +69,62 @@ export function OpportunityFormDialog({ open, onOpenChange, opportunity, onSucce
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company information is missing. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.title || !formData.customerName || !formData.customerEmail || !formData.expectedCloseDate) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      if (opportunity) {
-        await updateOpportunity((opportunity as any)._id || opportunity.id, {
-          ...formData,
-          expectedCloseDate: new Date(formData.expectedCloseDate),
-        })
-        toast({
-          title: "Success",
-          description: "Opportunity updated successfully",
-        })
-      } else {
-        await addOpportunity({
-          ...formData,
-          companyId: company?.id || "company-1",
-          expectedCloseDate: new Date(formData.expectedCloseDate),
-          assignedTo: user?.id,
-        })
-        toast({
-          title: "Success",
-          description: "Opportunity added successfully",
-        })
+      const submitData = {
+        companyId: company.id,
+        title: formData.title,
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        value: formData.value,
+        stage: formData.stage,
+        probability: formData.probability,
+        expectedCloseDate: new Date(formData.expectedCloseDate),
+        notes: formData.notes || undefined,
+        assignedTo: user?.id || undefined,
       }
 
-      onSuccess()
+      let response
+      if (opportunity) {
+        response = await api.crm.opportunities.update(opportunity.id, submitData)
+      } else {
+        response = await api.crm.opportunities.create(submitData)
+      }
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: opportunity ? "Opportunity updated successfully" : "Opportunity created successfully",
+        })
+        onOpenChange(false)
+        onSuccess()
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to save opportunity",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Failed to save opportunity:", error)
       toast({
@@ -99,6 +132,8 @@ export function OpportunityFormDialog({ open, onOpenChange, opportunity, onSucce
         description: "Failed to save opportunity. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -215,7 +250,16 @@ export function OpportunityFormDialog({ open, onOpenChange, opportunity, onSucce
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">{opportunity ? "Update Opportunity" : "Add Opportunity"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {opportunity ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                opportunity ? "Update Opportunity" : "Add Opportunity"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

@@ -1,159 +1,366 @@
 /**
  * Environment Configuration
  * 
- * This file centralizes environment-specific configuration
- * to eliminate hardcoded values throughout the application.
+ * Centralized environment variable management with validation and defaults
  */
 
-// Environment detection
-export const ENV = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-  IS_PRODUCTION: process.env.NODE_ENV === 'production',
-  IS_TEST: process.env.NODE_ENV === 'test',
-} as const
+interface EnvironmentConfig {
+  // Database Configuration
+  database: {
+    mongodb: {
+      uri: string;
+      username: string;
+      password: string;
+      database: string;
+    };
+    redis: {
+      url: string;
+    };
+  };
 
-// API Configuration
-export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-  TIMEOUT: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000'),
-  RETRIES: parseInt(process.env.NEXT_PUBLIC_API_RETRIES || '3'),
-} as const
+  // Application Configuration
+  app: {
+    nodeEnv: string;
+    port: number;
+    baseUrl: string;
+    apiBaseUrl: string;
+  };
 
-// Database Configuration
-export const DATABASE_CONFIG = {
-  MONGODB_URI: process.env.MONGODB_URI || '',
-  MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'bizabode-crm',
-} as const
+  // Authentication Configuration
+  auth: {
+    nextAuthSecret: string;
+    jwtSecret: string;
+    sessionSecret: string;
+    nextAuthUrl: string;
+  };
 
-// Authentication Configuration
-export const AUTH_CONFIG = {
-  JWT_SECRET: process.env.JWT_SECRET || '',
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  SESSION_SECRET: process.env.SESSION_SECRET || '',
-  COOKIE_SECURE: process.env.NODE_ENV === 'production',
-  COOKIE_SAME_SITE: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-} as const
+  // Security Configuration
+  security: {
+    corsOrigin: string;
+    rateLimitMax: number;
+    rateLimitWindow: number;
+  };
 
-// Email Configuration
-export const EMAIL_CONFIG = {
-  SMTP_HOST: process.env.SMTP_HOST || '',
-  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
-  SMTP_USER: process.env.SMTP_USER || '',
-  SMTP_PASS: process.env.SMTP_PASS || '',
-  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@bizabode.com',
-  FROM_NAME: process.env.FROM_NAME || 'Bizabode CRM',
-} as const
+  // File Upload Configuration
+  upload: {
+    maxFileSize: number;
+    uploadDir: string;
+    allowedTypes: string[];
+  };
 
-// File Upload Configuration
-export const UPLOAD_CONFIG = {
-  MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB
-  ALLOWED_FILE_TYPES: process.env.ALLOWED_FILE_TYPES?.split(',') || [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  ],
-  UPLOAD_DIR: process.env.UPLOAD_DIR || 'uploads',
-} as const
+  // Performance Configuration
+  performance: {
+    cacheTtl: number;
+    maxConnections: number;
+    requestTimeout: number;
+  };
 
-// Feature Flags
-export const FEATURE_FLAGS = {
-  ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
-  ENABLE_NOTIFICATIONS: process.env.NEXT_PUBLIC_ENABLE_NOTIFICATIONS === 'true',
-  ENABLE_DARK_MODE: process.env.NEXT_PUBLIC_ENABLE_DARK_MODE === 'true',
-  ENABLE_MULTI_TENANT: process.env.NEXT_PUBLIC_ENABLE_MULTI_TENANT === 'true',
-  ENABLE_API_DOCS: process.env.NEXT_PUBLIC_ENABLE_API_DOCS === 'true',
-  ENABLE_DEBUG_MODE: process.env.NEXT_PUBLIC_ENABLE_DEBUG_MODE === 'true',
-} as const
+  // Feature Flags
+  features: {
+    analytics: boolean;
+    backup: boolean;
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    twoFactorAuth: boolean;
+  };
 
-// External Service URLs
-export const EXTERNAL_SERVICES = {
-  PAYMENT_GATEWAY: process.env.PAYMENT_GATEWAY_URL || '',
-  SMS_SERVICE: process.env.SMS_SERVICE_URL || '',
-  NOTIFICATION_SERVICE: process.env.NOTIFICATION_SERVICE_URL || '',
-  ANALYTICS_SERVICE: process.env.ANALYTICS_SERVICE_URL || '',
-} as const
+  // Logging Configuration
+  logging: {
+    level: string;
+    format: string;
+    filePath: string;
+  };
 
-// Security Configuration
-export const SECURITY_CONFIG = {
-  CORS_ORIGINS: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-  RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW || '900000'), // 15 minutes
-  RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX || '100'),
-  PASSWORD_MIN_LENGTH: parseInt(process.env.PASSWORD_MIN_LENGTH || '8'),
-  SESSION_TIMEOUT: parseInt(process.env.SESSION_TIMEOUT || '3600000'), // 1 hour
-} as const
+  // Email Configuration
+  email: {
+    smtpHost: string;
+    smtpPort: number;
+    smtpUser: string;
+    smtpPass: string;
+    fromName: string;
+    fromEmail: string;
+  };
 
-// Business Configuration
-export const BUSINESS_CONFIG = {
-  COMPANY_NAME: process.env.COMPANY_NAME || 'Bizabode CRM',
-  COMPANY_EMAIL: process.env.COMPANY_EMAIL || 'support@bizabode.com',
-  COMPANY_PHONE: process.env.COMPANY_PHONE || '',
-  COMPANY_ADDRESS: process.env.COMPANY_ADDRESS || '',
-  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'support@bizabode.com',
-  DEFAULT_CURRENCY: process.env.DEFAULT_CURRENCY || 'USD',
-  DEFAULT_TIMEZONE: process.env.DEFAULT_TIMEZONE || 'UTC',
-  DEFAULT_LANGUAGE: process.env.DEFAULT_LANGUAGE || 'en',
-} as const
+  // Monitoring Configuration
+  monitoring: {
+    sentryDsn: string;
+    googleAnalyticsId: string;
+  };
 
-// License Configuration
-export const LICENSE_CONFIG = {
-  LICENSE_KEY: process.env.LICENSE_KEY || '',
-  LICENSE_TYPE: process.env.LICENSE_TYPE || 'demo',
-  MAX_USERS: parseInt(process.env.MAX_USERS || '10'),
-  MAX_COMPANIES: parseInt(process.env.MAX_COMPANIES || '1'),
-  EXPIRATION_DATE: process.env.EXPIRATION_DATE || '',
-} as const
+  // Backup Configuration
+  backup: {
+    schedule: string;
+    retentionDays: number;
+    storagePath: string;
+  };
 
-// Monitoring Configuration
-export const MONITORING_CONFIG = {
-  ENABLE_LOGGING: process.env.ENABLE_LOGGING === 'true',
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-  ENABLE_METRICS: process.env.ENABLE_METRICS === 'true',
-  METRICS_ENDPOINT: process.env.METRICS_ENDPOINT || '/metrics',
-} as const
+  // SSL Configuration
+  ssl: {
+    certPath: string;
+    keyPath: string;
+    redirect: boolean;
+  };
+}
 
-// Development Configuration
-export const DEV_CONFIG = {
-  ENABLE_HOT_RELOAD: process.env.ENABLE_HOT_RELOAD === 'true',
-  ENABLE_SOURCE_MAPS: process.env.ENABLE_SOURCE_MAPS === 'true',
-  ENABLE_DEBUG_TOOLS: process.env.ENABLE_DEBUG_TOOLS === 'true',
-  MOCK_API_RESPONSES: process.env.MOCK_API_RESPONSES === 'true',
-} as const
+/**
+ * Get environment variable with fallback
+ */
+function getEnvVar(key: string, fallback: string = ''): string {
+  return process.env[key] || fallback;
+}
 
-// Validation helpers
-export const validateConfig = () => {
-  const required = [
+/**
+ * Get environment variable as number with fallback
+ */
+function getEnvNumber(key: string, fallback: number): number {
+  const value = process.env[key];
+  return value ? parseInt(value, 10) : fallback;
+}
+
+/**
+ * Get environment variable as boolean with fallback
+ */
+function getEnvBoolean(key: string, fallback: boolean): boolean {
+  const value = process.env[key];
+  return value ? value.toLowerCase() === 'true' : fallback;
+}
+
+/**
+ * Get environment variable as array with fallback
+ */
+function getEnvArray(key: string, fallback: string[]): string[] {
+  const value = process.env[key];
+  return value ? value.split(',').map(item => item.trim()) : fallback;
+}
+
+/**
+ * Environment configuration object
+ */
+export const env: EnvironmentConfig = {
+  // Database Configuration
+  database: {
+    mongodb: {
+      uri: getEnvVar('MONGODB_URI', 'mongodb://localhost:27017/bizabode_crm'),
+      username: getEnvVar('MONGO_ROOT_USERNAME', 'admin'),
+      password: getEnvVar('MONGO_ROOT_PASSWORD', 'password123'),
+      database: getEnvVar('MONGO_DATABASE', 'bizabode_crm'),
+    },
+    redis: {
+      url: getEnvVar('REDIS_URL', 'redis://localhost:6379'),
+    },
+  },
+
+  // Application Configuration
+  app: {
+    nodeEnv: getEnvVar('NODE_ENV', 'development'),
+    port: getEnvNumber('PORT', 3000),
+    baseUrl: getEnvVar('NEXTAUTH_URL', 'http://localhost:3000'),
+    apiBaseUrl: getEnvVar('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:3000/api'),
+  },
+
+  // Authentication Configuration
+  auth: {
+    nextAuthSecret: getEnvVar('NEXTAUTH_SECRET', 'your-nextauth-secret'),
+    jwtSecret: getEnvVar('JWT_SECRET', 'your-jwt-secret'),
+    sessionSecret: getEnvVar('SESSION_SECRET', 'your-session-secret'),
+    nextAuthUrl: getEnvVar('NEXTAUTH_URL', 'http://localhost:3000'),
+  },
+
+  // Security Configuration
+  security: {
+    corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:3000'),
+    rateLimitMax: getEnvNumber('RATE_LIMIT_MAX', 100),
+    rateLimitWindow: getEnvNumber('RATE_LIMIT_WINDOW', 900000), // 15 minutes
+  },
+
+  // File Upload Configuration
+  upload: {
+    maxFileSize: getEnvNumber('MAX_FILE_SIZE', 10485760), // 10MB
+    uploadDir: getEnvVar('UPLOAD_DIR', './uploads'),
+    allowedTypes: getEnvArray('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif']),
+  },
+
+  // Performance Configuration
+  performance: {
+    cacheTtl: getEnvNumber('CACHE_TTL', 3600), // 1 hour
+    maxConnections: getEnvNumber('MAX_CONNECTIONS', 100),
+    requestTimeout: getEnvNumber('REQUEST_TIMEOUT', 30000), // 30 seconds
+  },
+
+  // Feature Flags
+  features: {
+    analytics: getEnvBoolean('ENABLE_ANALYTICS', true),
+    backup: getEnvBoolean('ENABLE_BACKUP', true),
+    emailNotifications: getEnvBoolean('ENABLE_EMAIL_NOTIFICATIONS', false),
+    smsNotifications: getEnvBoolean('ENABLE_SMS_NOTIFICATIONS', false),
+    twoFactorAuth: getEnvBoolean('ENABLE_TWO_FACTOR_AUTH', true),
+  },
+
+  // Logging Configuration
+  logging: {
+    level: getEnvVar('LOG_LEVEL', 'info'),
+    format: getEnvVar('LOG_FORMAT', 'json'),
+    filePath: getEnvVar('LOG_FILE_PATH', './logs/app.log'),
+  },
+
+  // Email Configuration
+  email: {
+    smtpHost: getEnvVar('SMTP_HOST', 'smtp.gmail.com'),
+    smtpPort: getEnvNumber('SMTP_PORT', 587),
+    smtpUser: getEnvVar('SMTP_USER', ''),
+    smtpPass: getEnvVar('SMTP_PASS', ''),
+    fromName: getEnvVar('SMTP_FROM_NAME', 'Bizabode CRM'),
+    fromEmail: getEnvVar('SMTP_FROM_EMAIL', 'noreply@localhost'),
+  },
+
+  // Monitoring Configuration
+  monitoring: {
+    sentryDsn: getEnvVar('SENTRY_DSN', ''),
+    googleAnalyticsId: getEnvVar('GOOGLE_ANALYTICS_ID', ''),
+  },
+
+  // Backup Configuration
+  backup: {
+    schedule: getEnvVar('BACKUP_SCHEDULE', '0 2 * * *'), // Daily at 2 AM
+    retentionDays: getEnvNumber('BACKUP_RETENTION_DAYS', 30),
+    storagePath: getEnvVar('BACKUP_STORAGE_PATH', './backups'),
+  },
+
+  // SSL Configuration
+  ssl: {
+    certPath: getEnvVar('SSL_CERT_PATH', './ssl/cert.pem'),
+    keyPath: getEnvVar('SSL_KEY_PATH', './ssl/key.pem'),
+    redirect: getEnvBoolean('SSL_REDIRECT', true),
+  },
+};
+
+/**
+ * Validate critical environment variables
+ */
+export function validateEnvironment(): void {
+  const criticalVars = [
     'MONGODB_URI',
+    'NEXTAUTH_SECRET',
     'JWT_SECRET',
-  ]
+  ];
 
-  const missing = required.filter(key => !process.env[key])
-  
+  const missing = criticalVars.filter(varName => !process.env[varName]);
+
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+    throw new Error(`Missing critical environment variables: ${missing.join(', ')}`);
   }
 }
 
-// Export all configuration
-export const CONFIG = {
-  ENV,
-  API: API_CONFIG,
-  DATABASE: DATABASE_CONFIG,
-  AUTH: AUTH_CONFIG,
-  EMAIL: EMAIL_CONFIG,
-  UPLOAD: UPLOAD_CONFIG,
-  FEATURES: FEATURE_FLAGS,
-  EXTERNAL: EXTERNAL_SERVICES,
-  SECURITY: SECURITY_CONFIG,
-  BUSINESS: BUSINESS_CONFIG,
-  LICENSE: LICENSE_CONFIG,
-  MONITORING: MONITORING_CONFIG,
-  DEV: DEV_CONFIG,
-} as const
+/**
+ * Check if running in production
+ */
+export function isProduction(): boolean {
+  return env.app.nodeEnv === 'production';
+}
 
-export default CONFIG
+/**
+ * Check if running in development
+ */
+export function isDevelopment(): boolean {
+  return env.app.nodeEnv === 'development';
+}
+
+/**
+ * Check if running in test
+ */
+export function isTest(): boolean {
+  return env.app.nodeEnv === 'test';
+}
+
+/**
+ * Get database connection string
+ */
+export function getDatabaseUrl(): string {
+  return env.database.mongodb.uri;
+}
+
+/**
+ * Get Redis connection string
+ */
+export function getRedisUrl(): string {
+  return env.database.redis.url;
+}
+
+/**
+ * Get API base URL
+ */
+export function getApiBaseUrl(): string {
+  return env.app.apiBaseUrl;
+}
+
+/**
+ * Get application base URL
+ */
+export function getBaseUrl(): string {
+  return env.app.baseUrl;
+}
+
+/**
+ * Check if feature is enabled
+ */
+export function isFeatureEnabled(feature: keyof EnvironmentConfig['features']): boolean {
+  return env.features[feature];
+}
+
+/**
+ * Get upload configuration
+ */
+export function getUploadConfig() {
+  return env.upload;
+}
+
+/**
+ * Get security configuration
+ */
+export function getSecurityConfig() {
+  return env.security;
+}
+
+/**
+ * Get performance configuration
+ */
+export function getPerformanceConfig() {
+  return env.performance;
+}
+
+/**
+ * Get logging configuration
+ */
+export function getLoggingConfig() {
+  return env.logging;
+}
+
+/**
+ * Get email configuration
+ */
+export function getEmailConfig() {
+  return env.email;
+}
+
+/**
+ * Get monitoring configuration
+ */
+export function getMonitoringConfig() {
+  return env.monitoring;
+}
+
+/**
+ * Get backup configuration
+ */
+export function getBackupConfig() {
+  return env.backup;
+}
+
+/**
+ * Get SSL configuration
+ */
+export function getSSLConfig() {
+  return env.ssl;
+}
+
+export default env;

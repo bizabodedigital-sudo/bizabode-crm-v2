@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Lead } from "@/lib/types"
-import { useCRMStore } from "@/lib/crm-store"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api-client-config"
+import { Loader2 } from "lucide-react"
 
 interface ConvertLeadDialogProps {
   open: boolean
@@ -20,8 +23,10 @@ interface ConvertLeadDialogProps {
 }
 
 export function ConvertLeadDialog({ open, onOpenChange, lead, onSuccess }: ConvertLeadDialogProps) {
-  const { convertLeadToOpportunity } = useCRMStore()
   const router = useRouter()
+  const { company, user } = useAuth()
+  const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     value: 0,
@@ -46,17 +51,86 @@ export function ConvertLeadDialog({ open, onOpenChange, lead, onSuccess }: Conve
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!lead) return
+    if (!lead || !company?.id) {
+      toast({
+        title: "Error",
+        description: "Lead or company information is missing",
+        variant: "destructive",
+      })
+      return
+    }
 
-    const opportunityId = await convertLeadToOpportunity((lead as any)._id || lead.id, {
-      title: formData.title,
-      value: formData.value,
-      expectedCloseDate: new Date(formData.expectedCloseDate),
-      notes: formData.notes,
-    })
+    // Validate required fields
+    if (!formData.title || !formData.value || !formData.expectedCloseDate) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
 
-    onSuccess()
-    router.push("/crm/opportunities")
+    setIsSubmitting(true)
+
+    try {
+      // Step 1: Create the opportunity
+      const opportunityData = {
+        companyId: company.id,
+        title: formData.title,
+        customerName: lead.name,
+        customerEmail: lead.email,
+        value: formData.value,
+        stage: "prospecting",
+        probability: 25,
+        expectedCloseDate: new Date(formData.expectedCloseDate),
+        notes: formData.notes || `Converted from lead: ${lead.name} (${lead.company})`,
+        assignedTo: user?.id || undefined,
+        leadId: lead.id, // Link back to original lead
+      }
+
+      const opportunityResponse = await api.crm.opportunities.create(opportunityData)
+
+      if (!opportunityResponse.success) {
+        throw new Error(opportunityResponse.error || "Failed to create opportunity")
+      }
+
+      // Step 2: Update the lead status to "converted"
+      const leadUpdateResponse = await api.crm.leads.update(lead.id, {
+        status: "qualified",
+        notes: `${lead.notes || ""}\n\nConverted to opportunity: ${formData.title}`,
+        convertedToOpportunityId: opportunityResponse.data.id,
+        convertedAt: new Date(),
+      })
+
+      if (leadUpdateResponse.success) {
+        toast({
+          title: "Success",
+          description: "Lead successfully converted to opportunity",
+        })
+        onOpenChange(false)
+        onSuccess()
+        router.push("/crm/opportunities")
+      } else {
+        // Opportunity was created but lead update failed - still show success
+        toast({
+          title: "Partial Success",
+          description: "Opportunity created but lead status update failed",
+          variant: "destructive",
+        })
+        onOpenChange(false)
+        onSuccess()
+        router.push("/crm/opportunities")
+      }
+    } catch (error) {
+      console.error("Failed to convert lead:", error)
+      toast({
+        title: "Error",
+        description: "Failed to convert lead to opportunity",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (!lead) return null
@@ -117,7 +191,16 @@ export function ConvertLeadDialog({ open, onOpenChange, lead, onSuccess }: Conve
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Convert to Opportunity</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Converting...
+                </>
+              ) : (
+                "Convert to Opportunity"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>

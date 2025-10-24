@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Item } from '@/lib/models/Item';
+import { authenticateToken } from '@/lib/middleware/auth';
 import { z } from 'zod';
 
 // Validation schema for bulk import
@@ -19,12 +20,17 @@ const bulkItemSchema = z.object({
 const bulkImportSchema = z.object({
   items: z.array(bulkItemSchema).min(1, 'At least one item is required'),
   companyId: z.string().min(1, 'Company ID is required'),
-  createdBy: z.string().nullable().transform(val => val || 'system'),
 });
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
+    
+    // Authenticate the request
+    const authResult = await authenticateToken(request);
+    if (!authResult.authenticated) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
+    }
     
     const body = await request.json();
     
@@ -61,7 +67,7 @@ export async function POST(request: NextRequest) {
         const item = new Item({
           ...itemData,
           companyId: validatedData.companyId,
-          createdBy: validatedData.createdBy,
+          createdBy: authResult.user.id,
           costPrice: itemData.costPrice || itemData.unitPrice,
           critical: itemData.critical || false,
         });
