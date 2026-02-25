@@ -16,7 +16,7 @@ export const demoCompany: Company = {
 export const demoUsers: User[] = [
   {
     id: "user-1",
-    email: "admin@bizabode.com",
+    email: "admin@example.com",
     name: "Admin User",
     role: "admin",
     companyId: "company-1",

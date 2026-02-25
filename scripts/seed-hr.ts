@@ -257,7 +257,7 @@ async function seedHR() {
     console.log("🏢 Found company:", company._id, company.name)
 
     // Find demo user
-    const user = await User.findOne({ email: "admin@bizabode.com" })
+    const user = await User.findOne({ email: "admin@example.com" })
     if (!user) {
       console.error("❌ Demo user not found. Please run the main seed script first.")
       process.exit(1)

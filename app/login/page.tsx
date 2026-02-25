@@ -61,7 +61,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@bizabode.com"
+                  placeholder="user@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -90,16 +90,6 @@ export default function LoginPage() {
                   <p className="text-sm text-destructive font-medium">{error}</p>
                 </div>
               )}
-              <div className="text-sm bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-2">
-                <p className="font-semibold text-primary flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Demo Credentials
-                </p>
-                <div className="space-y-1 text-muted-foreground">
-                  <p className="font-mono">admin@bizabode.com</p>
-                  <p className="font-mono">admin123</p>
-                </div>
-              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading}>

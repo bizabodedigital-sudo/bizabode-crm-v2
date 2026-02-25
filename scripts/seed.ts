@@ -297,18 +297,18 @@ async function seed() {
     }
 
     // Find or create demo user
-    let user = await User.findOne({ email: "admin@bizabode.com" })
+    let user = await User.findOne({ email: "admin@example.com" })
 
     if (!user) {
       user = await User.create({
-        email: "admin@bizabode.com",
+        email: "admin@example.com",
         password: "demo123",
         name: "Admin User",
         role: "admin",
         companyId: company._id,
         isActive: true,
       })
-      console.log("✅ Created demo user (admin@bizabode.com / demo123)")
+      console.log("✅ Created demo user (admin@example.com / demo123)")
     } else {
       console.log("✅ Found existing user")
     }
@@ -381,7 +381,7 @@ async function seed() {
     console.log(`   Leads: ${leads.length}`)
     console.log(`   Opportunities: ${opportunities.length}`)
     console.log("\n🔗 Login at: http://localhost:3000/login")
-    console.log("   Email: admin@bizabode.com")
+    console.log("   Email: admin@example.com")
     console.log("   Password: demo123")
 
     await mongoose.disconnect()

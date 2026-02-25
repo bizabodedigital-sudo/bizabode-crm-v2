@@ -74,7 +74,7 @@ async function seedDatabase() {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     const adminUser = new User({
       name: 'Admin User',
-      email: 'admin@bizabode.com',
+      email: 'admin@example.com',
       password: hashedPassword,
       role: 'admin',
       companyId: company._id,
@@ -580,8 +580,8 @@ async function seedDatabase() {
     console.log(`- ${leaves.length} Leave Records`);
 
     console.log('\n🔑 Login Credentials:');
-    console.log('Admin: admin@bizabode.com / admin123');
-    console.log('Manager: manager@bizabode.com / admin123');
+    console.log('Admin: admin@example.com / admin123');
+    console.log('Manager: manager@example.com / admin123');
 
   } catch (error) {
     console.error('❌ Error seeding database:', error);
