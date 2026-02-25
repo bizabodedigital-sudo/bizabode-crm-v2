@@ -18,32 +18,18 @@ export class LicenseService {
    */
   static async verifyLicense(licenseKey: string): Promise<LicenseStatus> {
     try {
-      // Mock implementation - replace with actual API call
-      // const response = await axios.post(
-      //   `${LICENSE_API_URL}/verify`,
-      //   { licenseKey },
-      //   {
-      //     headers: {
-      //       'Authorization': `Bearer ${LICENSE_API_KEY}`,
-      //       'Content-Type': 'application/json'
-      //     }
-      //   }
-      // );
-
-      // Mock response for development
-      if (licenseKey.startsWith("DEMO-") || licenseKey.startsWith("TEST-")) {
-        return {
-          valid: true,
-          plan: "professional",
-          expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-          features: ["inventory", "crm", "quotes", "invoices", "deliveries", "reports"],
-          maxUsers: 50,
-          maxItems: 10000,
+      const response = await axios.post(
+        `${LICENSE_API_URL}/verify`,
+        { licenseKey },
+        {
+          headers: {
+            'Authorization': `Bearer ${LICENSE_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
+      );
 
-      // For production, make actual API call
-      throw new Error("Invalid license key")
+      return response.data;
     } catch (error) {
       console.error("License verification error:", error)
       throw new Error("License verification failed")
@@ -55,22 +41,18 @@ export class LicenseService {
    */
   static async activateLicense(licenseKey: string, companyId: string): Promise<LicenseStatus> {
     try {
-      // Mock implementation - replace with actual API call
-      const status = await this.verifyLicense(licenseKey)
+      const response = await axios.post(
+        `${LICENSE_API_URL}/activate`,
+        { licenseKey, companyId },
+        {
+          headers: {
+            'Authorization': `Bearer ${LICENSE_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      // In production, send activation request to Bizabode API
-      // await axios.post(
-      //   `${LICENSE_API_URL}/activate`,
-      //   { licenseKey, companyId },
-      //   {
-      //     headers: {
-      //       'Authorization': `Bearer ${LICENSE_API_KEY}`,
-      //       'Content-Type': 'application/json'
-      //     }
-      //   }
-      // );
-
-      return status
+      return response.data;
     } catch (error) {
       console.error("License activation error:", error)
       throw new Error("License activation failed")
