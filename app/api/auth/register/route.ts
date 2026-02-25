@@ -4,6 +4,7 @@ import User from "@/lib/models/User"
 import Company from "@/lib/models/Company"
 import { generateToken } from "@/lib/middleware/auth"
 import { successResponse, errorResponse, validationErrorResponse } from "@/lib/utils/api-response"
+import { validateLicenseKey } from "@/lib/license-client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +42,12 @@ export async function POST(request: NextRequest) {
       return errorResponse("User with this email already exists", 409)
     }
 
+    // Validate License Key with the official server
+    const licenseValidation = await validateLicenseKey(licenseKey, companyName)
+    if (!licenseValidation.valid) {
+      return errorResponse(licenseValidation.error || "Invalid license key", 400)
+    }
+
     // Create or find company
     let company = await Company.findOne({ licenseKey })
 
@@ -49,10 +56,16 @@ export async function POST(request: NextRequest) {
       company = await Company.create({
         name: companyName,
         licenseKey,
-        licensePlan: "trial",
-        licenseExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
-        licenseStatus: "active",
+        licensePlan: licenseValidation.plan || "trial",
+        licenseExpiry: licenseValidation.expiresAt ? new Date(licenseValidation.expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        licenseStatus: licenseValidation.status || "active",
       })
+    } else {
+      // If the company somehow already exists with this license key, update it based on the latest verification
+      company.licensePlan = licenseValidation.plan || company.licensePlan
+      if (licenseValidation.expiresAt) company.licenseExpiry = new Date(licenseValidation.expiresAt)
+      company.licenseStatus = licenseValidation.status || company.licenseStatus
+      await company.save()
     }
 
     // Create user
