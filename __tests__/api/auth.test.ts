@@ -125,7 +125,7 @@ describe('Authentication API', () => {
           password: 'weak',
           name: 'Test User',
           companyName: 'Test Company',
-          licenseKey: 'DEMO-LICENSE-KEY'
+          licenseKey: 'VALID-LICENSE-KEY'
         })
       })
 
@@ -145,7 +145,7 @@ describe('Authentication API', () => {
           password: 'Password123',
           name: 'Test User',
           companyName: 'Test Company',
-          licenseKey: 'DEMO-LICENSE-KEY'
+          licenseKey: 'VALID-LICENSE-KEY'
         })
       })
 

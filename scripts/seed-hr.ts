@@ -249,7 +249,7 @@ async function seedHR() {
     console.log("✅ Connected to MongoDB")
 
     // Find demo company
-    const company = await Company.findOne({ licenseKey: "DEMO-LICENSE-KEY" })
+    const company = await Company.findOne({ licenseKey: "demo-company-license" })
     if (!company) {
       console.error("❌ Demo company not found. Please run the main seed script first.")
       process.exit(1)

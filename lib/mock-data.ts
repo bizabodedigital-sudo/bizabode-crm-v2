@@ -5,7 +5,7 @@ import type { User, Company, Item, Lead, Opportunity, Quote, Invoice, Payment, D
 export const demoCompany: Company = {
   id: "company-1",
   name: "Bizabode Demo Company",
-  licenseKey: "DEMO-LICENSE-KEY",
+  licenseKey: "demo-company-license",
   licensePlan: "professional",
   licenseExpiry: new Date("2025-12-31"),
   createdAt: new Date("2024-01-01"),

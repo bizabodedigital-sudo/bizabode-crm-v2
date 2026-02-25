@@ -276,12 +276,12 @@ async function seed() {
     console.log("✅ Connected to MongoDB")
 
     // Find or create demo company
-    let company = await Company.findOne({ licenseKey: "DEMO-LICENSE-KEY" })
+    let company = await Company.findOne({ licenseKey: "demo-company-license" })
 
     if (!company) {
       company = await Company.create({
         name: "Bizabode Demo Company",
-        licenseKey: "DEMO-LICENSE-KEY",
+        licenseKey: "demo-company-license",
         licensePlan: "professional",
         licenseExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
         licenseStatus: "active",

@@ -13,12 +13,14 @@ Everything is built, integrated, and working perfectly!
 **URL:** http://localhost:3000/login
 
 **Credentials:**
+
 ```
 Email: admin@bizabode.com
 Password: demo123
 ```
 
 **Includes:**
+
 - ✅ 21 Products (real inventory from your list)
 - ✅ 4 Customer Leads
 - ✅ 2 Opportunities ($73,000 pipeline)
@@ -30,12 +32,13 @@ Password: demo123
 **URL:** http://localhost:3000/register
 
 **Fill in:**
+
 - Name: Your Name
 - Email: your@email.com
 - Password: password123
 - Confirm Password: password123
 - Company Name: Your Company Inc
-- License Key: `DEMO-LICENSE-KEY`
+- License Key: `demo-company-license`
 
 **Click:** Create account → Auto-login!
 
@@ -46,6 +49,7 @@ Password: demo123
 ### **Seeded Data (Ready to Use):**
 
 **21 Products:**
+
 - 28OZ B/BASE CONTAINER
 - SOUP CUP PAPER 24OZ (44 units)
 - HAND TOWEL SOPHIE (2 units)
@@ -56,12 +60,14 @@ Password: demo123
 - And 14 more products...
 
 **4 Customer Leads:**
+
 - John Smith - Smith's Restaurant (New)
 - Maria Garcia - Cafe Express (Contacted)
 - David Chen - Food Truck Co (Qualified)
 - Sarah Johnson - Catering Pro (Contacted)
 
 **2 Opportunities:**
+
 - Food Truck Supply Contract - $45,000 (Proposal stage)
 - Catering Events Package - $28,000 (Negotiation stage)
 
@@ -70,6 +76,7 @@ Password: demo123
 ## 🧪 **Quick Test (3 Minutes)**
 
 ### **1. Login & View Dashboard**
+
 ```
 → Login with admin@bizabode.com
 → See KPI cards
@@ -78,6 +85,7 @@ Password: demo123
 ```
 
 ### **2. View Inventory**
+
 ```
 → Click "Inventory"
 → See 21 products
@@ -88,6 +96,7 @@ Password: demo123
 ```
 
 ### **3. Create a Lead**
+
 ```
 → Go to CRM → Leads
 → Click "Add Lead"
@@ -96,6 +105,7 @@ Password: demo123
 ```
 
 ### **4. Convert to Opportunity**
+
 ```
 → Find David Chen (already qualified)
 → Or qualify your new lead
@@ -105,6 +115,7 @@ Password: demo123
 ```
 
 ### **5. Create a Quote**
+
 ```
 → Go to CRM → Quotes
 → Click "Create Quote"
@@ -118,6 +129,7 @@ Password: demo123
 ```
 
 ### **6. Convert to Invoice**
+
 ```
 → Find your quote
 → Change status to "Accepted"
@@ -127,6 +139,7 @@ Password: demo123
 ```
 
 ### **7. Record Payment**
+
 ```
 → Go to CRM → Invoices
 → Find invoice
@@ -146,6 +159,7 @@ Password: demo123
 **Click:** `bizabode-crm` database
 
 **See Collections:**
+
 - `items` → 21+ products
 - `leads` → 4+ customers
 - `opportunities` → 2+ deals
@@ -161,6 +175,7 @@ Password: demo123
 ## ✅ **All Features Working**
 
 ### **Fully Functional:**
+
 - [x] User authentication (register/login)
 - [x] Inventory management (21 products seeded)
 - [x] Stock adjustments (with audit trail)
@@ -186,7 +201,7 @@ Password: demo123
 3. Convert to Opportunity (deal potential)
    ↓
 4. Create Quote (itemized proposal)
-   ↓  
+   ↓
 5. Send Quote (PDF + Email ready)
    ↓
 6. Quote Accepted
@@ -213,17 +228,21 @@ Password: demo123
 ## 💡 **Pro Tips**
 
 **Re-seed Database:**
+
 ```bash
 pnpm db:seed
 ```
+
 Resets to fresh data anytime!
 
 **Check API Calls:**
+
 - Open Browser DevTools → Network
 - See all API requests
 - All returning 200 OK ✅
 
 **View Logs:**
+
 - Terminal → Backend logs
 - Browser Console → Frontend logs
 - Both clean with no errors!
@@ -266,10 +285,10 @@ Resets to fresh data anytime!
 ---
 
 **Need help?** Check:
+
 - `README.md` - Complete documentation
 - `QUICK_START.md` - Setup guide
 - `TESTING_GUIDE.md` - How to test
 - `FINAL_SUMMARY.md` - Feature list
 
 **Enjoy your CRM system!** 🚀
-

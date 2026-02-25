@@ -73,7 +73,7 @@ async function seedMICData() {
     await mongoose.connect(MONGODB_URI)
     console.log("✅ Connected to MongoDB")
 
-    const company = await Company.findOne({ licenseKey: "DEMO-LICENSE-KEY" })
+    const company = await Company.findOne({ licenseKey: "demo-company-license" })
     if (!company) {
       console.error("❌ Demo company not found. Please run main seed script first.")
       process.exit(1)

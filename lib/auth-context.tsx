@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         name,
         companyName: companyName || "My Company",
-        licenseKey: licenseKey || "DEMO-LICENSE-KEY",
+        licenseKey: licenseKey || "",
       })
 
       const { token, user, company } = response

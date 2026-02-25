@@ -11,6 +11,7 @@ pnpm install
 ### 2. Set Up MongoDB
 
 **Option A: Local MongoDB**
+
 ```bash
 # Install MongoDB (macOS)
 brew tap mongodb/brew
@@ -24,6 +25,7 @@ MONGODB_URI=mongodb://localhost:27017/bizabode-crm
 ```
 
 **Option B: MongoDB Atlas (Cloud - FREE)**
+
 1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 2. Create free account
 3. Create a cluster (takes 3-5 minutes)
@@ -71,11 +73,12 @@ Open [http://localhost:3000](http://localhost:3000)
    - **Password**: yourpassword
    - **Name**: Your Name
    - **Company Name**: Your Company
-   - **License Key**: DEMO-LICENSE-KEY
+   - **License Key**: demo-company-license
 
 ### 2. Explore the Dashboard
 
 After registration, you'll see:
+
 - **Dashboard**: Overview with KPIs and charts
 - **Inventory**: Manage your products
 - **CRM**: Leads → Opportunities → Quotes → Invoices
@@ -113,7 +116,7 @@ For quick testing with pre-populated data:
 
 - **Email**: admin@bizabode.com
 - **Password**: demo123
-- **License Key**: DEMO-LICENSE-KEY
+- **License Key**: demo-company-license
 
 ## 📱 User Roles
 
@@ -128,18 +131,23 @@ Your first account is automatically **Admin**. You can create more users with di
 ## 🆘 Common Issues
 
 ### "Cannot connect to MongoDB"
+
 ✅ Make sure MongoDB is running: `brew services start mongodb-community`
 
 ### "JWT_SECRET is required"
+
 ✅ Add `JWT_SECRET=any-random-string` to `.env.local`
 
 ### Email not sending
+
 ✅ Email is optional. For Gmail:
+
 1. Enable 2FA in Google Account
 2. Generate App Password
 3. Use in SMTP_PASSWORD
 
 ### Port 3000 already in use
+
 ```bash
 # Kill process on port 3000
 lsof -ti:3000 | xargs kill -9
@@ -173,4 +181,3 @@ PORT=3001 pnpm dev
 ---
 
 **Need Help?** Open an issue or email support@bizabode.com
-

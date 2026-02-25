@@ -17,7 +17,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [companyName, setCompanyName] = useState("")
-  const [licenseKey, setLicenseKey] = useState("DEMO-LICENSE-KEY")
+  const [licenseKey, setLicenseKey] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { register } = useAuth()
@@ -133,7 +133,7 @@ export default function RegisterPage() {
               <Input
                 id="licenseKey"
                 type="text"
-                placeholder="DEMO-LICENSE-KEY"
+                placeholder="Enter your license key"
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value)}
                 required
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                 className="font-mono"
               />
               <p className="text-xs text-muted-foreground">
-                Use DEMO-LICENSE-KEY for testing
+                Enter the license key provided by your administrator
               </p>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
